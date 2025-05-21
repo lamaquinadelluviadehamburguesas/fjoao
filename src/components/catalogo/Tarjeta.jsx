@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Col, Card, Badge, Stack } from 'react-bootstrap';
 
@@ -32,3 +33,4 @@ const Tarjeta = ({ indice, nombre_producto, descripcion_producto, precio_unitari
 };
 
 export default Tarjeta;
+

@@ -30,7 +30,7 @@ const elementosPorPagina = 3; // Número de elementos por página
 
 const [categoriaEditada, setCategoriaEditada] = useState(null);
 const [mostrarModalEdicion, setMostrarModalEdicion] = useState(false);
-
+//http://localhost:3000/api/categorias
    const obtenerCategorias = async () => { // Método renombrado a español
       try {
         const respuesta = await fetch('http://localhost:3000/api/categorias');
