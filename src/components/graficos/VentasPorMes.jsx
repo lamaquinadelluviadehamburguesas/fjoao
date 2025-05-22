@@ -12,7 +12,7 @@ const VentasPorMes = ({ meses, totales_por_mes }) => {
         label: 'Ventas por Mes',
         data: totales_por_mes,
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
+        borderColor: 'rgb(5, 43, 43)',
         borderWidth: 1,
       },
     ],

@@ -1,14 +1,14 @@
-
-import React from "react";
+import React from 'react';
 import { Col, Card, Badge, Stack } from 'react-bootstrap';
 
 const Tarjeta = ({ indice, nombre_producto, descripcion_producto, precio_unitario, stock, id_categoria, imagen }) => {
   return (
     <Col lg={3} className="mt-3">
-      <Card border="">
+      <Card border="" style={{ width: '100%', height: '100%', marginBottom: '20px' }}>
         <Card.Img
           variant="top"
           src={`data:image/png;base64,${imagen}`}
+          style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
         />
         <Card.Body>
           <Card.Title>
@@ -33,4 +33,3 @@ const Tarjeta = ({ indice, nombre_producto, descripcion_producto, precio_unitari
 };
 
 export default Tarjeta;
-
