@@ -12,7 +12,8 @@ const TablaProductos = ({
   paginaActual,
   establecerPaginaActual,
   abrirModalEliminacion,
-  abrirModalEdicion
+  abrirModalEdicion,
+  generarPDFDetalleProducto
 }) => {
   if (cargando) {
     return <div>Cargando productos...</div>;
@@ -46,17 +47,26 @@ const TablaProductos = ({
               <td>{producto.id_categoria}</td>
               <td>{producto.precio_unitario}</td>
               <td>{producto.stock}</td>
-              <td>{producto.imagen ? (
-    <img
-      src={`data:image/png;base64,${producto.imagen}`}
-                  alt={producto.nombre_producto}
-                  style={{ maxWidth: '100px' }}
-                />
-              ) : (
-                'Sin imagen'
-              )}
-            </td>
               <td>
+                {producto.imagen ? (
+                  <img
+                    src={`data:image/png;base64,${producto.imagen}`}
+                    alt={producto.nombre_producto}
+                    style={{ maxWidth: '100px' }}
+                  />
+                ) : (
+                  'Sin imagen'
+                )}
+              </td>
+              <td>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="me-2"
+                  onClick={() => generarPDFDetalleProducto(producto)}
+                >
+                  <i className="bi bi-file-earmark-pdf"></i>
+                </Button>
                 <Button
                   variant="outline-danger"
                   size="sm"

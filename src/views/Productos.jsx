@@ -5,6 +5,8 @@ import ModalEliminacionProducto from '../components/producto/ModalEliminacionPro
 import ModalEdicionProducto from '../components/producto/ModalEdicionProducto';
 import CuadroBusquedas from '../components/busquedas/CuadroBusquedas';
 import { Container, Button, Row, Col } from "react-bootstrap";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const Productos = () => {
   const [listaProductos, setListaProductos] = useState([]);
@@ -180,6 +182,97 @@ const Productos = () => {
     paginaActual * elementosPorPagina
   );
 
+  // PDF Report Generation
+  const generarPDFProductos = () => {
+    const doc = new jsPDF();
+    
+    // Set header background
+    doc.setFillColor(0, 123, 255);
+    doc.rect(0, 0, 210, 30, 'F');
+    
+    // Set title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.text('Reporte de Productos', 105, 20, { align: 'center' });
+
+    // Define table columns and data
+    const columnas = ['ID', 'Nombre', 'Descripción', 'Categoría', 'Precio', 'Stock'];
+    const datos = listaProductos.map(producto => [
+      producto.id_producto,
+      producto.nombre_producto,
+      producto.descripcion_producto || 'N/A',
+      producto.id_categoria,
+      producto.precio_unitario,
+      producto.stock
+    ]);
+
+    // Add table
+    autoTable(doc, {
+      head: [columnas],
+      body: datos,
+      startY: 40,
+      theme: 'grid',
+      styles: { fontSize: 10, cellPadding: 2 },
+      headStyles: { fillColor: [0, 123, 255] },
+      margin: { top: 40 }
+    });
+
+    // Add page number marker
+    const totalPaginas = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPaginas; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(0);
+      doc.text(`Página ${i} de ${totalPaginas}`, 190, 290, { align: 'right' });
+    }
+
+    // Save the document
+    const fecha = new Date().toISOString().slice(0, 10);
+    doc.save(`Productos_${fecha}.pdf`);
+  };
+
+  const generarPDFDetalleProducto = (producto) => {
+    const doc = new jsPDF();
+    
+    // Set header background
+    doc.setFillColor(0, 123, 255);
+    doc.rect(0, 0, 210, 30, 'F');
+    
+    // Set title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.text(`Detalles del Producto: ${producto.nombre_producto}`, 105, 20, { align: 'center' });
+
+    // Add product details
+    let y = 40;
+    doc.setTextColor(0);
+    doc.setFontSize(12);
+    doc.text(`ID: ${producto.id_producto}`, 20, y);
+    y += 10;
+    doc.text(`Nombre: ${producto.nombre_producto}`, 20, y);
+    y += 10;
+    doc.text(`Descripción: ${producto.descripcion_producto || 'N/A'}`, 20, y);
+    y += 10;
+    doc.text(`Categoría: ${producto.id_categoria}`, 20, y);
+    y += 10;
+    doc.text(`Precio: ${producto.precio_unitario}`, 20, y);
+    y += 10;
+    doc.text(`Stock: ${producto.stock}`, 20, y);
+
+    // Add image if available
+    if (producto.imagen) {
+      try {
+        doc.addImage(`data:image/png;base64,${producto.imagen}`, 'PNG', 20, y + 10, 50, 50);
+      } catch (error) {
+        console.error('Error al agregar la imagen al PDF:', error);
+      }
+    }
+
+    // Save the document
+    const fecha = new Date().toISOString().slice(0, 10);
+    doc.save(`Producto_${producto.id_producto}_${fecha}.pdf`);
+  };
+
   return (
     <Container className="mt-5">
       <br />
@@ -191,7 +284,17 @@ const Productos = () => {
             Nuevo Producto
           </Button>
         </Col>
-        <Col lg={6} md={8} sm={8} xs={7}>
+        <Col lg={2} md={4} sm={4} xs={5}>
+          <Button
+            className="mb-3"
+            onClick={generarPDFProductos}
+            variant="secondary"
+            style={{ width: "100%" }}
+          >
+            Generar reporte PDF
+          </Button>
+        </Col>
+        <Col lg={4} md={4} sm={4} xs={7}>
           <CuadroBusquedas
             textoBusqueda={textoBusqueda}
             manejarCambioBusqueda={manejarCambioBusqueda}
@@ -207,6 +310,7 @@ const Productos = () => {
         error={errorCarga}
         abrirModalEliminacion={abrirModalEliminacion}
         abrirModalEdicion={abrirModalEdicion}
+        generarPDFDetalleProducto={generarPDFDetalleProducto}
         totalElementos={listaProductos.length}
         elementosPorPagina={elementosPorPagina}
         paginaActual={paginaActual}
