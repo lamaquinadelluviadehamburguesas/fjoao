@@ -7,6 +7,8 @@ import CuadroBusquedas from '../components/busquedas/CuadroBusquedas';
 import { Container, Button, Row, Col } from "react-bootstrap";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const Productos = () => {
   const [listaProductos, setListaProductos] = useState([]);
@@ -182,7 +184,7 @@ const Productos = () => {
     paginaActual * elementosPorPagina
   );
 
-  // PDF Report Generation
+  // PDF Report Generation for All Products
   const generarPDFProductos = () => {
     const doc = new jsPDF();
     
@@ -231,38 +233,53 @@ const Productos = () => {
     doc.save(`Productos_${fecha}.pdf`);
   };
 
+  // PDF Report Generation for a Single Product (Centered Layout)
   const generarPDFDetalleProducto = (producto) => {
     const doc = new jsPDF();
     
+    // Page dimensions (A4 size in mm: 210mm wide, 297mm tall)
+    const pageWidth = 210; // Width in mm
+    const margin = 20; // Margin on each side
+    const contentWidth = pageWidth - 2 * margin; // Usable width for content
+
     // Set header background
     doc.setFillColor(0, 123, 255);
-    doc.rect(0, 0, 210, 30, 'F');
+    doc.rect(0, 0, pageWidth, 30, 'F');
     
-    // Set title
+    // Set title (already centered)
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(28);
-    doc.text(`Detalles del Producto: ${producto.nombre_producto}`, 105, 20, { align: 'center' });
+    doc.text(`Detalles del Producto: ${producto.nombre_producto}`, pageWidth / 2, 20, { align: 'center' });
 
-    // Add product details
+    // Add product details (centered)
     let y = 40;
     doc.setTextColor(0);
     doc.setFontSize(12);
-    doc.text(`ID: ${producto.id_producto}`, 20, y);
-    y += 10;
-    doc.text(`Nombre: ${producto.nombre_producto}`, 20, y);
-    y += 10;
-    doc.text(`Descripción: ${producto.descripcion_producto || 'N/A'}`, 20, y);
-    y += 10;
-    doc.text(`Categoría: ${producto.id_categoria}`, 20, y);
-    y += 10;
-    doc.text(`Precio: ${producto.precio_unitario}`, 20, y);
-    y += 10;
-    doc.text(`Stock: ${producto.stock}`, 20, y);
 
-    // Add image if available
+    // Helper function to center text
+    const centerText = (text, yPos) => {
+      doc.text(text, pageWidth / 2, yPos, { align: 'center' });
+    };
+
+    centerText(`ID: ${producto.id_producto}`, y);
+    y += 10;
+    centerText(`Nombre: ${producto.nombre_producto}`, y);
+    y += 10;
+    centerText(`Descripción: ${producto.descripcion_producto || 'N/A'}`, y);
+    y += 10;
+    centerText(`Categoría: ${producto.id_categoria}`, y);
+    y += 10;
+    centerText(`Precio: ${producto.precio_unitario}`, y);
+    y += 10;
+    centerText(`Stock: ${producto.stock}`, y);
+
+    // Add image if available (centered)
     if (producto.imagen) {
       try {
-        doc.addImage(`data:image/png;base64,${producto.imagen}`, 'PNG', 20, y + 10, 50, 50);
+        const imgWidth = 50; // Image width in mm
+        const imgHeight = 50; // Image height in mm
+        const imgX = (pageWidth - imgWidth) / 2; // Center the image horizontally
+        doc.addImage(`data:image/png;base64,${producto.imagen}`, 'PNG', imgX, y + 10, imgWidth, imgHeight);
       } catch (error) {
         console.error('Error al agregar la imagen al PDF:', error);
       }
@@ -271,6 +288,30 @@ const Productos = () => {
     // Save the document
     const fecha = new Date().toISOString().slice(0, 10);
     doc.save(`Producto_${producto.id_producto}_${fecha}.pdf`);
+  };
+
+  // Excel Report Generation
+  const exportarExcelProductos = () => {
+    // Define data structure
+    const datos = listaProductos.map(producto => ({
+      ID: producto.id_producto,
+      Nombre: producto.nombre_producto,
+      Descripción: producto.descripcion_producto || 'N/A',
+      Categoría: producto.id_categoria,
+      Precio: producto.precio_unitario,
+      Stock: producto.stock
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(datos);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
+
+    // Generate Excel file
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const nombreArchivo = `Productos_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, nombreArchivo);
   };
 
   return (
@@ -294,7 +335,17 @@ const Productos = () => {
             Generar reporte PDF
           </Button>
         </Col>
-        <Col lg={4} md={4} sm={4} xs={7}>
+        <Col lg={2} md={4} sm={4} xs={5}>
+          <Button
+            className="mb-3"
+            onClick={exportarExcelProductos}
+            variant="secondary"
+            style={{ width: "100%" }}
+          >
+            Generar Excel
+          </Button>
+        </Col>
+        <Col lg={2} md={4} sm={4} xs={7}>
           <CuadroBusquedas
             textoBusqueda={textoBusqueda}
             manejarCambioBusqueda={manejarCambioBusqueda}
