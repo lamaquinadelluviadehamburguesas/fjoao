@@ -1,61 +1,40 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
-const StockPorCategoria = forwardRef(({ categorias = [], stock = [] }, ref) => {
-  // Validar datos
-  if (
-    !Array.isArray(categorias) ||
-    !Array.isArray(stock) ||
-    categorias.length === 0 ||
-    stock.length === 0 ||
-    categorias.length !== stock.length
-  ) {
-    return <div>Cargando datos de stock por categoría...</div>;
-  }
-
-  // Datos para gráfico de barras
-  const data = {
-    labels: categorias,
-    datasets: [
-      {
-        label: 'Stock Disponible',
-        data: stock,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Opciones del gráfico
   const options = {
     responsive: true,
     plugins: {
       legend: {
         position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Stock por Categoría',
-      },
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Cantidad en Stock',
+          text: 'Córdobas (C$)',
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Categorías',
+          text: 'Empleados',
         },
       },
     },
@@ -64,10 +43,13 @@ const StockPorCategoria = forwardRef(({ categorias = [], stock = [] }, ref) => {
   return (
     <Card>
       <Card.Body>
-        <Bar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default StockPorCategoria;
+export default VentasPorEmpleado;

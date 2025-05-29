@@ -1,52 +1,41 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const TotalVentasPorCategoriaYMes = ({
-  meses = [],
-  ventas_por_categoria = [],
-}) => {
-  // Normalizar datos para evitar errores
-  const mesesData = Array.isArray(meses) ? meses : [];
-  const ventasData = Array.isArray(ventas_por_categoria) ? ventas_por_categoria : [];
-
-  // Mostrar mensaje si no hay datos disponibles
-  if (mesesData.length === 0 || ventasData.length === 0) {
-    return <div>Cargando datos de ventas por categoría y mes...</div>;
-  }
-
-  // Definir datos para la gráfica
-  const data = {
-    labels: mesesData,
-    datasets: ventasData.map((item, index) => ({
-      label: item.label || `Categoría ${index + 1}`,
-      data: Array.isArray(item.data) ? item.data : [],
-      backgroundColor: `hsl(${(index * 60) % 360}, 70%, 60%)`,  // colores variados
-      borderColor: `hsl(${(index * 60) % 360}, 70%, 40%)`,
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
       borderWidth: 1,
-    })),
-  };
+    },
+  ],
+};
 
-  // Opciones para barra apilada
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Total de Ventas por Categoría y Mes (Barra Apilada)',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
-      x: {
-        stacked: true,
-        title: { display: true, text: 'Meses' },
-      },
       y: {
-        stacked: true,
         beginAtZero: true,
-        title: { display: true, text: 'Total Ventas' },
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -54,10 +43,13 @@ const TotalVentasPorCategoriaYMes = ({
   return (
     <Card>
       <Card.Body>
-        <Bar data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
 };
 
-export default TotalVentasPorCategoriaYMes;
+export default VentasPorEmpleado;

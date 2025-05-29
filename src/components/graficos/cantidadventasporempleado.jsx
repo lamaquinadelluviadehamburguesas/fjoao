@@ -1,52 +1,41 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const CantidadVentasPorEmpleado = forwardRef(({ empleados = [], cantidad_ventas = [] }, ref) => {
-  // Validación de datos
-  if (
-    !Array.isArray(empleados) ||
-    !Array.isArray(cantidad_ventas) ||
-    empleados.length === 0 ||
-    cantidad_ventas.length === 0 ||
-    empleados.length !== cantidad_ventas.length
-  ) {
-    return <div>Cargando datos de cantidad de ventas por empleado...</div>;
-  }
-
-  const data = {
-    labels: empleados,
-    datasets: [
-      {
-        label: 'Cantidad de Ventas',
-        data: cantidad_ventas,
-        backgroundColor: 'rgba(153, 102, 255, 0.7)',
-        borderColor: 'rgba(153, 102, 255, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Cantidad de Ventas por Empleado',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Cantidad de Ventas' },
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
       },
       x: {
-        title: { display: true, text: 'Empleados' },
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -54,10 +43,13 @@ const CantidadVentasPorEmpleado = forwardRef(({ empleados = [], cantidad_ventas 
   return (
     <Card>
       <Card.Body>
-        <Bar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default CantidadVentasPorEmpleado;
+export default VentasPorEmpleado;

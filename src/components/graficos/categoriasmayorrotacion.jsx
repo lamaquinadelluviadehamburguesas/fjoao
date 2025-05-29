@@ -1,51 +1,40 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Radar } from 'react-chartjs-2';
-import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
-
-const CategoriasMayorRotacion = forwardRef(({ categorias = [], rotacion = [] }, ref) => {
-  // Validación de datos
-  if (
-    !Array.isArray(categorias) ||
-    !Array.isArray(rotacion) ||
-    categorias.length === 0 ||
-    rotacion.length === 0 ||
-    categorias.length !== rotacion.length
-  ) {
-    return <div>Cargando datos de categorías con mayor rotación...</div>;
-  }
-
-  const data = {
-    labels: categorias,
-    datasets: [
-      {
-        label: 'Rotación',
-        data: rotacion,
-        backgroundColor: 'rgba(255, 99, 132, 0.4)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 2,
-        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Categorías con Mayor Rotación',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
-      r: {
+      y: {
         beginAtZero: true,
-        ticks: {
-          stepSize: 1,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
         },
       },
     },
@@ -54,10 +43,13 @@ const CategoriasMayorRotacion = forwardRef(({ categorias = [], rotacion = [] }, 
   return (
     <Card>
       <Card.Body>
-        <Radar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default CategoriasMayorRotacion;
+export default VentasPorEmpleado;

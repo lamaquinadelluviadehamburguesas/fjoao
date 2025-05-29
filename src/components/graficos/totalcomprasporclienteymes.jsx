@@ -1,49 +1,41 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const TotalComprasPorClienteYMes = ({ meses = [], compras_por_cliente = [] }) => {
-  // Validar datos
-  if (
-    !Array.isArray(meses) ||
-    !Array.isArray(compras_por_cliente) ||
-    meses.length === 0 ||
-    compras_por_cliente.length === 0
-  ) {
-    return <div>Cargando datos de compras por cliente y mes...</div>;
-  }
-
-  // Construir datasets para el gráfico
-  const data = {
-    labels: meses,
-    datasets: compras_por_cliente.map((cliente, index) => ({
-      label: cliente.label || `Cliente ${index + 1}`,
-      data: Array.isArray(cliente.data) ? cliente.data : [],
-      backgroundColor: `hsl(${(index * 60) % 360}, 70%, 60%)`,
-      borderColor: `hsl(${(index * 60) % 360}, 70%, 40%)`,
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
       borderWidth: 1,
-    })),
-  };
+    },
+  ],
+};
 
-  // Opciones para barra agrupada
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Total Compras por Cliente y Mes',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
-      x: {
-        stacked: false,
-        title: { display: true, text: 'Meses' },
-      },
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Total Compras' },
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -51,10 +43,13 @@ const TotalComprasPorClienteYMes = ({ meses = [], compras_por_cliente = [] }) =>
   return (
     <Card>
       <Card.Body>
-        <Bar data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
 };
 
-export default TotalComprasPorClienteYMes;
+export default VentasPorEmpleado;

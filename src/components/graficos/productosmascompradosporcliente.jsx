@@ -1,52 +1,41 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const ProductosMasCompradosPorCliente = forwardRef(({ clientes = [], cantidades = [] }, ref) => {
-  // Validación básica de datos
-  if (
-    !Array.isArray(clientes) ||
-    !Array.isArray(cantidades) ||
-    clientes.length === 0 ||
-    cantidades.length === 0 ||
-    clientes.length !== cantidades.length
-  ) {
-    return <div>Cargando datos de productos más comprados por cliente...</div>;
-  }
-
-  const data = {
-    labels: clientes,
-    datasets: [
-      {
-        label: 'Cantidad Comprada',
-        data: cantidades,
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Productos Más Comprados Por Cliente',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Cantidad Comprada' },
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
       },
       x: {
-        title: { display: true, text: 'Clientes' },
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -54,10 +43,13 @@ const ProductosMasCompradosPorCliente = forwardRef(({ clientes = [], cantidades 
   return (
     <Card>
       <Card.Body>
-        <Bar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default ProductosMasCompradosPorCliente;
+export default VentasPorEmpleado;

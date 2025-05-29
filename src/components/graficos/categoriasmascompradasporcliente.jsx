@@ -1,54 +1,41 @@
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const CategoriasMasCompradasPorCliente = forwardRef(({ categorias = [], cantidades = [] }, ref) => {
-  // Validación de datos
-  if (
-    !Array.isArray(categorias) ||
-    !Array.isArray(cantidades) ||
-    categorias.length === 0 ||
-    cantidades.length === 0 ||
-    categorias.length !== cantidades.length
-  ) {
-    return <div>Cargando datos de categorías más compradas por cliente...</div>;
-  }
-
-  const data = {
-    labels: categorias,
-    datasets: [
-      {
-        label: 'Cantidad Comprada',
-        data: cantidades,
-        backgroundColor: 'rgba(255, 159, 64, 0.7)',
-        borderColor: 'rgba(255, 159, 64, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
-    indexAxis: 'y', // Esto hace que la barra sea horizontal
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Categorías Más Compradas por Cliente',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
-      x: {
-        beginAtZero: true,
-        title: { display: true, text: 'Cantidad' },
-      },
       y: {
-        title: { display: true, text: 'Categorías' },
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -56,10 +43,13 @@ const CategoriasMasCompradasPorCliente = forwardRef(({ categorias = [], cantidad
   return (
     <Card>
       <Card.Body>
-        <Bar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default CategoriasMasCompradasPorCliente;
+export default VentasPorEmpleado;

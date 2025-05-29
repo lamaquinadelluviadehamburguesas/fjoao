@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ChatIA from '../components/chat/ChatIA';
 
 // Importa todos los componentes de gráficos
 import VentasPorMes from '../components/graficos/VentasPorMes';
 import VentasPorEmpleado from '../components/graficos/VentasPorEmpleado';
 import VentasProductosPorMes from '../components/graficos/ventasproductospormes';
 import VentasPorClienteEmpleadoYMes from '../components/graficos/ventasporclienteempleadoymes';
-import	ventasporcategoriaydiasemana from '../components/graficos/ventasporcategoriaydiasemana';
 import TotalVentasPorMes from '../components/graficos/TotalVentasPorMes';
 import TotalVentasPorEmpleadoYMes from '../components/graficos/TotalVentasPorEmpleadoYMes';
 import TotalVentasPorEmpleado from '../components/graficos/TotalVentasPorEmpleado';
@@ -32,9 +32,13 @@ import CategoriasMayorRotacion from '../components/graficos/CategoriasMayorRotac
 import CategoriasMasCompradasPorCliente from '../components/graficos/CategoriasMasCompradasPorCliente';
 import CantidadVentasPorEmpleado from '../components/graficos/CantidadVentasPorEmpleado';
 import CantidadComprasPorCliente from '../components/graficos/CantidadComprasPorCliente';
+import VentasPorCategoriaYDiaSemana from '../components/graficos/VentasPorCategoriaYDiaSemana';
 
 const Estadisticas = () => {
-  // Estados para todos los gráficos (sin cambios)
+  // Estado para controlar la visibilidad del modal del chat
+  const [mostrarChatModal, setMostrarChatModal] = useState(false);
+
+  // Estados para todos los gráficos
   const [meses, setMeses] = useState([]);
   const [totalesPorMes, setTotalesPorMes] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -43,8 +47,6 @@ const Estadisticas = () => {
   const [ventasPorProducto, setVentasPorProducto] = useState([]);
   const [mesesClienteEmpleado, setMesesClienteEmpleado] = useState([]);
   const [ventasPorClienteEmpleado, setVentasPorClienteEmpleado] = useState([]);
-  const [mesesClienteCategoria, setMesesClienteCategoria] = useState([]);
-  const [ventasPorClienteCategoria, setVentasPorClienteCategoria] = useState([]);
   const [diasSemana, setDiasSemana] = useState([]);
   const [ventasPorCategoriaDia, setVentasPorCategoriaDia] = useState([]);
   const [mesesTotalVentas, setMesesTotalVentas] = useState([]);
@@ -99,7 +101,6 @@ const Estadisticas = () => {
   const chartRefVentasPorEmpleado = useRef(null);
   const chartRefVentasProductosPorMes = useRef(null);
   const chartRefVentasPorClienteEmpleadoYMes = useRef(null);
-  const chartRefVentasPorClienteCategoriaYMes = useRef(null);
   const chartRefVentasPorCategoriaYDiaSemana = useRef(null);
   const chartRefTotalVentasPorMes = useRef(null);
   const chartRefTotalVentasPorEmpleadoYMes = useRef(null);
@@ -166,13 +167,10 @@ const Estadisticas = () => {
     doc.save('Reporte_VentasPorEmpleado.pdf');
   };
 
-  // Nota: Para los gráficos con datos más complejos (como VentasProductosPorMes, que usa arrays anidados),
-  // necesitarás ajustar la estructura de la tabla según los datos. Aquí un ejemplo simplificado:
   const generarReporteVentasProductosPorMes = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text('Reporte de Ventas de Productos por Mes', 14, 20);
-    // Suponiendo que ventasPorProducto es un array de objetos con producto y ventas
     autoTable(doc, {
       startY: 30,
       head: [['Mes', 'Producto', 'Ventas']],
@@ -191,11 +189,32 @@ const Estadisticas = () => {
     doc.save('Reporte_VentasProductosPorMes.pdf');
   };
 
-  // Repite este patrón para los demás gráficos. Para evitar redundancia, aquí se muestra uno más:
+  const generarReporteVentasPorCategoriaYDiaSemana = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Reporte de Ventas por Categoría y Día de la Semana', 14, 20);
+    autoTable(doc, {
+      startY: 30,
+      head: [['Día de la Semana', 'Categoría', 'Ventas']],
+      body: diasSemana.flatMap((dia, i) =>
+        ventasPorCategoriaDia[i]?.map((venta, j) => [dia, `Categoría ${j + 1}`, venta]) || []
+      ),
+    });
+    const canvas = chartRefVentasPorCategoriaYDiaSemana.current?.canvas;
+    if (canvas) {
+      const imgData = canvas.toDataURL('image/png');
+      const imgProps = doc.getImageProperties(imgData);
+      const pdfWidth = doc.internal.pageSize.getWidth() - 28;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      doc.addImage(imgData, 'PNG', 14, doc.lastAutoTable.finalY + 10, pdfWidth, pdfHeight);
+    }
+    doc.save('Reporte_VentasPorCategoriaYDiaSemana.pdf');
+  };
+
   const generarReporteTotalVentasPorCategoria = () => {
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text('Reporte de Total Ventas por categoría', 14, 20);
+    doc.text('Reporte de Total Ventas por Categoría', 14, 20);
     autoTable(doc, {
       startY: 30,
       head: [['Categoría', 'Total Ventas']],
@@ -212,7 +231,7 @@ const Estadisticas = () => {
     doc.save('Reporte_TotalVentasPorCategoria.pdf');
   };
 
-  // Fetch data on component mount (sin cambios)
+  // Fetch data on component mount
   useEffect(() => {
     const cargaVentasPorMes = async () => {
       try {
@@ -259,18 +278,6 @@ const Estadisticas = () => {
       } catch (error) {
         console.error('Error al cargar ventas por cliente empleado y mes:', error);
         alert('Error al cargar ventas por cliente empleado y mes: ' + error.message);
-      }
-    };
-
-    const cargaVentasPorClienteCategoriaYMes = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/api/ventasPorClienteCategoriaYMes');
-        const data = await response.json();
-        setMesesClienteCategoria(data.meses);
-        setVentasPorClienteCategoria(data.ventas_por_cliente_categoria);
-      } catch (error) {
-        console.error('Error al cargar ventas por cliente categoría y mes:', error);
-        alert('Error al cargar ventas por cliente categoría y mes: ' + error.message);
       }
     };
 
@@ -567,7 +574,6 @@ const Estadisticas = () => {
     cargaVentasPorEmpleado();
     cargaVentasProductosPorMes();
     cargaVentasPorClienteEmpleadoYMes();
-    cargaVentasPorClienteCategoriaYMes();
     cargaVentasPorCategoriaYDiaSemana();
     cargaTotalVentasPorMes();
     cargaTotalVentasPorEmpleadoYMes();
@@ -596,8 +602,22 @@ const Estadisticas = () => {
 
   // Renderiza todos los componentes con los datos obtenidos
   return (
-    <Container className="mt-5">
+    <Container fluid className="mt-4">
       <h4>Estadísticas</h4>
+      
+      <Button 
+        variant="primary" 
+        className="mb-4"
+        onClick={() => setMostrarChatModal(true)}
+      >
+        Consultar con IA
+      </Button>
+
+      <ChatIA 
+        mostrarChatModal={mostrarChatModal} 
+        setMostrarChatModal={setMostrarChatModal} 
+      />
+
       <Row className="mt-4">
         <Col xs={12} sm={12} md={12} lg={6} className="mb-4">
           <VentasPorMes meses={meses} totales_por_mes={totalesPorMes} ref={chartRefVentasPorMes} />
@@ -624,14 +644,8 @@ const Estadisticas = () => {
           </Button>
         </Col>
         <Col xs={12} sm={12} md={12} lg={6} className="mb-4">
-          <VentasPorClienteCategoriaYMes meses={mesesClienteCategoria} ventas_por_cliente_categoria={ventasPorClienteCategoria} ref={chartRefVentasPorClienteCategoriaYMes} />
-          <Button variant="primary" onClick={() => {/* Agregar función */}} className="mt-2">
-            Generar Reporte PDF
-          </Button>
-        </Col>
-        <Col xs={12} sm={12} md={12} lg={6} className="mb-4">
           <VentasPorCategoriaYDiaSemana dias_semana={diasSemana} ventas_por_categoria={ventasPorCategoriaDia} ref={chartRefVentasPorCategoriaYDiaSemana} />
-          <Button variant="primary" onClick={() => {/* Agregar función */}} className="mt-2">
+          <Button variant="primary" onClick={generarReporteVentasPorCategoriaYDiaSemana} className="mt-2">
             Generar Reporte PDF
           </Button>
         </Col>

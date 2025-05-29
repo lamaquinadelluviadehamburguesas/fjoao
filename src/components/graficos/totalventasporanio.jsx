@@ -1,61 +1,40 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Line } from 'react-chartjs-2';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const TotalVentasPorAnio = ({ anios = [], total_ventas = [] }) => {
-  // Validar datos
-  if (
-    !Array.isArray(anios) ||
-    !Array.isArray(total_ventas) ||
-    anios.length === 0 ||
-    total_ventas.length === 0 ||
-    anios.length !== total_ventas.length
-  ) {
-    return <div>Cargando datos de ventas por año...</div>;
-  }
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
-  // Datos para el gráfico Line
-  const data = {
-    labels: anios,
-    datasets: [
-      {
-        label: 'Total Ventas por Año',
-        data: total_ventas,
-        fill: false,
-        borderColor: 'rgba(75,192,192,1)',
-        backgroundColor: 'rgba(75,192,192,0.4)',
-        tension: 0.3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-    ],
-  };
-
-  // Opciones del gráfico
   const options = {
     responsive: true,
     plugins: {
       legend: {
         position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Total Ventas por Año',
-      },
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Total Ventas',
+          text: 'Córdobas (C$)',
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Años',
+          text: 'Empleados',
         },
       },
     },
@@ -64,10 +43,13 @@ const TotalVentasPorAnio = ({ anios = [], total_ventas = [] }) => {
   return (
     <Card>
       <Card.Body>
-        <Line data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
 };
 
-export default TotalVentasPorAnio;
+export default VentasPorEmpleado;

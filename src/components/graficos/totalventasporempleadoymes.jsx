@@ -1,40 +1,55 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-const TotalVentasPorMesBar = ({ meses, totales }) => {
-  const data = {
-    labels: meses,
-    datasets: [
-      {
-        label: 'Total Ventas (C$)',
-        data: totales,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgb(30, 90, 180)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
     responsive: true,
-    plugins: { legend: { position: 'top' }, title: { display: true, text: 'Total Ventas por Mes (Bar)' } },
+    plugins: {
+      legend: {
+        position: 'top',
+      }
+    },
     scales: {
-      y: { beginAtZero: true, title: { display: true, text: 'Ventas (C$)' } },
-      x: { title: { display: true, text: 'Meses' } },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
+      },
     },
   };
 
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Total Ventas por Mes - Barra</Card.Title>
-        <div style={{ height: 350 }}>
-          <Bar data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
         </div>
       </Card.Body>
     </Card>
   );
 };
 
-export default TotalVentasPorMesBar;
+export default VentasPorEmpleado;

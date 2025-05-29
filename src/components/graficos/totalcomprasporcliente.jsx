@@ -1,55 +1,41 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(ArcElement, Tooltip, Legend);
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
-const TotalComprasPorCliente = forwardRef(({ clientes = [], total_compras = [] }, ref) => {
-  // Validación de datos
-  if (
-    !Array.isArray(clientes) ||
-    !Array.isArray(total_compras) ||
-    clientes.length === 0 ||
-    total_compras.length === 0 ||
-    clientes.length !== total_compras.length
-  ) {
-    return <div>Cargando datos de compras por cliente...</div>;
-  }
-
-  // Datos para Doughnut
-  const data = {
-    labels: clientes,
-    datasets: [
-      {
-        label: 'Total Compras por Cliente',
-        data: total_compras,
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-          '#FF9F40',
-          '#C9CBCF',
-        ],
-        borderColor: '#fff',
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  // Opciones del gráfico
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'right',
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
       },
-      title: {
-        display: true,
-        text: 'Total Compras por Cliente',
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -57,10 +43,13 @@ const TotalComprasPorCliente = forwardRef(({ clientes = [], total_compras = [] }
   return (
     <Card>
       <Card.Body>
-        <Doughnut ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default TotalComprasPorCliente;
+export default VentasPorEmpleado;

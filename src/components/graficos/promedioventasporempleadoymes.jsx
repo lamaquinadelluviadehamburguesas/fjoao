@@ -1,60 +1,40 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
-const PromedioVentasPorEmpleadoYMes = forwardRef(({ meses = [], promedios_por_empleado = [] }, ref) => {
-  // Validar datos
-  if (
-    !Array.isArray(meses) ||
-    !Array.isArray(promedios_por_empleado) ||
-    meses.length === 0 ||
-    promedios_por_empleado.length === 0
-  ) {
-    return <div>Cargando datos de promedio de ventas por empleado y mes...</div>;
-  }
-
-  // Crear datasets para cada empleado
-  const data = {
-    labels: meses,
-    datasets: promedios_por_empleado.map((empleado, index) => ({
-      label: empleado.label || `Empleado ${index + 1}`,
-      data: Array.isArray(empleado.data) ? empleado.data : [],
-      fill: false,
-      borderColor: `hsl(${(index * 60) % 360}, 70%, 50%)`,
-      backgroundColor: `hsl(${(index * 60) % 360}, 70%, 70%)`,
-      tension: 0.2,
-      borderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    })),
-  };
-
-  // Opciones del gráfico
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Promedio de Ventas por Empleado y Mes',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Promedio Ventas',
+          text: 'Córdobas (C$)',
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Meses',
+          text: 'Empleados',
         },
       },
     },
@@ -63,10 +43,13 @@ const PromedioVentasPorEmpleadoYMes = forwardRef(({ meses = [], promedios_por_em
   return (
     <Card>
       <Card.Body>
-        <Line ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default PromedioVentasPorEmpleadoYMes;
+export default VentasPorEmpleado;

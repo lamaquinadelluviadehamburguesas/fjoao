@@ -1,38 +1,41 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
-import { Pie } from 'react-chartjs-2';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-const TotalVentasPorDiaSemana = ({ diasSemana, totalVentas }) => {
-  const data = {
-    labels: diasSemana, // Ejemplo: ['Lunes', 'Martes', 'Miércoles', ...]
-    datasets: [
-      {
-        label: 'Ventas por Día de la Semana',
-        data: totalVentas,
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-          '#FF9F40',
-          '#C9CBCF',
-        ],
-        borderColor: '#fff',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'right',
+        position: 'top',
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
       },
-      title: {
-        display: true,
-        text: 'Total Ventas por Día de la Semana',
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -40,13 +43,13 @@ const TotalVentasPorDiaSemana = ({ diasSemana, totalVentas }) => {
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Total Ventas por Día de la Semana (Pastel)</Card.Title>
-        <div style={{ height: 300 }}>
-          <Pie data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
         </div>
       </Card.Body>
     </Card>
   );
 };
 
-export default TotalVentasPorDiaSemana;
+export default VentasPorEmpleado;

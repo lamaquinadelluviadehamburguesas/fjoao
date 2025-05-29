@@ -1,53 +1,41 @@
-import React, { forwardRef } from 'react';
-import { Card } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Card } from "react-bootstrap";
+import { Bar, Line } from 'react-chartjs-2';
+import Chart from 'chart.js/auto';
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-const ProductosBajoStock = forwardRef(({ productos = [], stock = [] }, ref) => {
-  // Validación de datos
-  if (
-    !Array.isArray(productos) ||
-    !Array.isArray(stock) ||
-    productos.length === 0 ||
-    stock.length === 0 ||
-    productos.length !== stock.length
-  ) {
-    return <div>Cargando datos de productos con bajo stock...</div>;
-  }
-
-  const data = {
-    labels: productos,
-    datasets: [
-      {
-        label: 'Cantidad en Stock',
-        data: stock,
-        backgroundColor: 'rgba(255, 206, 86, 0.7)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
+const VentasPorEmpleado = ({ empleados, total_ventas }) => {
+const data = {
+  labels: empleados, // Nombres de los empleados
+  datasets: [
+    {
+      label: 'Ventas(C$)',
+      data: total_ventas, // Total de ventas por empleado
+      backgroundColor: 'rgba(190, 192, 75, 0.2)',
+      borderColor: 'rgb(192, 124, 75)',
+      borderWidth: 1,
+    },
+  ],
+};
 
   const options = {
-    indexAxis: 'y', // Barra horizontal
     responsive: true,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: 'Productos con Bajo Stock',
-      },
+      legend: {
+        position: 'top',
+      }
     },
     scales: {
-      x: {
-        beginAtZero: true,
-        title: { display: true, text: 'Cantidad en Stock' },
-      },
       y: {
-        title: { display: true, text: 'Productos' },
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Empleados',
+        },
       },
     },
   };
@@ -55,10 +43,13 @@ const ProductosBajoStock = forwardRef(({ productos = [], stock = [] }, ref) => {
   return (
     <Card>
       <Card.Body>
-        <Bar ref={ref} data={data} options={options} />
+        <Card.Title>Ventas por empleado</Card.Title>
+        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+          <Line data={data} options={options} />
+        </div>
       </Card.Body>
     </Card>
   );
-});
+};
 
-export default ProductosBajoStock;
+export default VentasPorEmpleado;

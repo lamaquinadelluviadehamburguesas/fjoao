@@ -1,55 +1,74 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
+import { Card } from "react-bootstrap";
 import { Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const VentasPorClienteEmpleadoYMes = ({
-  meses = [],
-  ventas_por_cliente_empleado = [],
-  altura = 400,
-  tituloPersonalizado = 'Ventas por Cliente, Empleado y Mes',
-}) => {
-  const mesesValidos = Array.isArray(meses) ? meses : [];
-  const ventasValidas = Array.isArray(ventas_por_cliente_empleado) ? ventas_por_cliente_empleado : [];
-
-  if (mesesValidos.length === 0 || ventasValidas.length === 0) {
-    return <div className="text-center p-4">Cargando datos de ventas por cliente, empleado y mes...</div>;
+const VentasPorClienteEmpleadoMes = ({ data: ventasData = [] }) => {
+  // Verificar si hay datos
+  if (!ventasData || ventasData.length === 0) {
+    return (
+      <Card>
+        <Card.Body>
+          <Card.Title>Ventas por Cliente, Empleado y Mes</Card.Title>
+          <div style={{ height: "400px", justifyContent: "center", alignItems: "center", display: "flex" }}>
+            <p>No hay datos disponibles para mostrar</p>
+          </div>
+        </Card.Body>
+      </Card>
+    );
   }
 
+  // Preparar datos para el gráfico
   const data = {
-    labels: mesesValidos,
-    datasets: ventasValidas.map((item, index) => ({
-      label: item.label || `Cliente-Empleado ${index + 1}`,
-      data: Array.isArray(item.data) ? item.data : [],
-      backgroundColor: `hsl(${(index * 60) % 360}, 70%, 70%)`,
-      borderColor: `hsl(${(index * 60) % 360}, 70%, 40%)`,
-      borderWidth: 1,
-    })),
+    labels: ventasData.map(item => `${item.cliente} - ${item.empleado} (${item.mes})`),
+    datasets: [
+      {
+        label: 'Ventas(C$)',
+        data: ventasData.map(item => item.total_venta),
+        backgroundColor: 'rgba(190, 192, 75, 0.2)',
+        borderColor: 'rgb(192, 124, 75)',
+        borderWidth: 1,
+      },
+    ],
   };
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
-      title: {
-        display: true,
-        text: tituloPersonalizado,
+      legend: {
+        position: 'top',
       },
       tooltip: {
         callbacks: {
-          label: function (context) {
-            return `${context.dataset.label}: C$${context.raw}`;
-          },
-        },
-      },
+          label: (context) => {
+            const item = ventasData[context.dataIndex];
+            return [
+              `Cliente: ${item.cliente}`,
+              `Empleado: ${item.empleado}`,
+              `Mes: ${item.mes}`,
+              `Venta: C$${item.total_venta.toLocaleString()}`
+            ];
+          }
+        }
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Total Ventas (C$)' },
+        title: {
+          display: true,
+          text: 'Córdobas (C$)',
+        },
       },
       x: {
-        title: { display: true, text: 'Meses' },
+        title: {
+          display: true,
+          text: 'Cliente - Empleado - Mes',
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45
+        }
       },
     },
   };
@@ -57,8 +76,8 @@ const VentasPorClienteEmpleadoYMes = ({
   return (
     <Card>
       <Card.Body>
-        <Card.Title>{tituloPersonalizado}</Card.Title>
-        <div style={{ height: altura }}>
+        <Card.Title>Ventas por Cliente, Empleado y Mes</Card.Title>
+        <div style={{ height: "400px", justifyContent: "center", alignItems: "center", display: "flex" }}>
           <Bar data={data} options={options} />
         </div>
       </Card.Body>
@@ -66,4 +85,4 @@ const VentasPorClienteEmpleadoYMes = ({
   );
 };
 
-export default VentasPorClienteEmpleadoYMes;
+export default VentasPorClienteEmpleadoMes;
