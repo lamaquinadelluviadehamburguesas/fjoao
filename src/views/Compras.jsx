@@ -4,12 +4,19 @@ import ModalActualizacionCompra from '../components/compras/ModalActualizacionCo
 import ModalDetallesCompra from '../components/detalles_compras/ModalDetallesCompra';
 import ModalEliminacionCompra from '../components/compras/ModalEliminacionCompra';
 import ModalRegistroCompra from '../components/compras/ModalRegistroCompra';
-import { Container, Button, Row, Col } from 'react-bootstrap';
+import { Container, Button, Row, Col, Pagination } from 'react-bootstrap';
+import CuadroBusquedas from '../components/busquedas/CuadroBusquedas';
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 const Compras = () => {
   const [listaCompras, setListaCompras] = useState([]);
+  const [comprasFiltradas, setComprasFiltradas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState(null);
+  const [textoBusqueda, setTextoBusqueda] = useState("");
+
+  const [paginaActual, setPaginaActual] = useState(1);
+  const elementosPorPagina = 5;
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [detallesCompra, setDetallesCompra] = useState([]);
@@ -33,12 +40,49 @@ const Compras = () => {
   const [compraAEditar, setCompraAEditar] = useState(null);
   const [detallesEditados, setDetallesEditados] = useState([]);
 
+  const indiceUltimo = paginaActual * elementosPorPagina;
+  const indicePrimero = indiceUltimo - elementosPorPagina;
+  const comprasActuales = comprasFiltradas.slice(indicePrimero, indiceUltimo);
+  const totalPaginas = Math.ceil(comprasFiltradas.length / elementosPorPagina);
+
+  const cambiarPagina = (numeroPagina) => {
+    setPaginaActual(numeroPagina);
+  };
+
+  const items = [];
+  for (let numero = 1; numero <= totalPaginas; numero++) {
+    items.push(
+      <Pagination.Item
+        key={numero}
+        active={numero === paginaActual}
+        onClick={() => cambiarPagina(numero)}
+      >
+        {numero}
+      </Pagination.Item>
+    );
+  }
+
+  const manejarCambioBusqueda = (e) => {
+    const texto = e.target.value.toLowerCase();
+    setTextoBusqueda(texto);
+    setPaginaActual(1);
+
+    const filtradas = listaCompras.filter(compra =>
+      compra.nombre_empleado.toLowerCase().includes(texto) ||
+      compra.id_compra.toString().includes(texto)
+    );
+    setComprasFiltradas(filtradas);
+  };
+
   const obtenerCompras = async () => {
     try {
       const respuesta = await fetch('http://localhost:3000/api/obtenercompras');
-      if (!respuesta.ok) throw new Error('Error al cargar las compras');
+      if (!respuesta.ok) {
+        throw new Error('Error al cargar las compras');
+      }
       const datos = await respuesta.json();
       setListaCompras(datos);
+      setComprasFiltradas(datos);
       setCargando(false);
     } catch (error) {
       setErrorCarga(error.message);
@@ -207,62 +251,111 @@ const Compras = () => {
   };
 
   return (
-    <Container className="mt-5">
-      <br />
-      <h4>Compras con Detalles</h4>
-      <Row>
-        <Col lg={2} md={4} sm={4} xs={5}>
-          <Button variant="primary" onClick={() => setMostrarModalRegistro(true)} style={{ width: "100%" }}>
-            Nueva Compra
-          </Button>
-        </Col>
-      </Row>
-      <br />
-      <TablaCompras
-        compras={listaCompras}
-        cargando={cargando}
-        error={errorCarga}
-        obtenerDetalles={obtenerDetalles}
-        abrirModalEliminacion={abrirModalEliminacion}
-        abrirModalActualizacion={abrirModalActualizacion}
-      />
-      <ModalDetallesCompra
-        mostrarModal={mostrarModal}
-        setMostrarModal={setMostrarModal}
-        detalles={detallesCompra}
-        cargandoDetalles={cargandoDetalles}
-        errorDetalles={errorDetalles}
-      />
-      <ModalEliminacionCompra
-        mostrarModalEliminacion={mostrarModalEliminacion}
-        setMostrarModalEliminacion={setMostrarModalEliminacion}
-        eliminarCompra={eliminarCompra}
-      />
-      <ModalRegistroCompra
-        mostrarModal={mostrarModalRegistro}
-        setMostrarModal={setMostrarModalRegistro}
-        nuevaCompra={nuevaCompra}
-        setNuevaCompra={setNuevaCompra}
-        detallesCompra={detallesNuevos}
-        setDetallesCompra={setDetallesNuevos}
-        agregarDetalle={agregarDetalle}
-        agregarCompra={agregarCompra}
-        errorCarga={errorCarga}
-        empleados={empleados}
-        productos={productos}
-      />
-      <ModalActualizacionCompra
-        mostrarModal={mostrarModalActualizacion}
-        setMostrarModal={setMostrarModalActualizacion}
-        compra={compraAEditar}
-        detallesCompra={detallesEditados}
-        setDetallesCompra={setDetallesEditados}
-        actualizarCompra={actualizarCompra}
-        errorCarga={errorCarga}
-        empleados={empleados}
-        productos={productos}
-      />
-    </Container>
+    <>
+      <Container className="mt-5">
+        <br />
+        <h4>Compras con Detalles</h4>
+        <Row className="mb-3">
+          <Col lg={2} md={4} sm={4} xs={5}>
+            <Button 
+              variant="primary" 
+              onClick={() => setMostrarModalRegistro(true)} 
+              style={{ width: "100%" }}
+            >
+              Nueva Compra
+            </Button>
+          </Col>
+          <Col lg={5} md={8} sm={8} xs={7}>
+            <CuadroBusquedas
+              textoBusqueda={textoBusqueda}
+              manejarCambioBusqueda={manejarCambioBusqueda}
+              placeholder="Buscar por empleado o ID..."
+            />
+          </Col>
+        </Row>
+
+        <TablaCompras
+          compras={comprasActuales}
+          cargando={cargando}
+          error={errorCarga}
+          obtenerDetalles={obtenerDetalles}
+          abrirModalEliminacion={abrirModalEliminacion}
+          abrirModalActualizacion={abrirModalActualizacion}
+        />
+
+        {!cargando && !errorCarga && comprasFiltradas.length > 0 && (
+          <Row className="mt-3">
+            <Col>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  Mostrando {indicePrimero + 1} a {Math.min(indiceUltimo, comprasFiltradas.length)} de {comprasFiltradas.length} compras
+                </div>
+                {totalPaginas > 1 && (
+                  <Pagination className="mb-0">
+                    <Pagination.First 
+                      onClick={() => cambiarPagina(1)} 
+                      disabled={paginaActual === 1}
+                    />
+                    <Pagination.Prev 
+                      onClick={() => cambiarPagina(Math.max(paginaActual - 1, 1))} 
+                      disabled={paginaActual === 1}
+                    />
+                    {items}
+                    <Pagination.Next 
+                      onClick={() => cambiarPagina(Math.min(paginaActual + 1, totalPaginas))} 
+                      disabled={paginaActual === totalPaginas}
+                    />
+                    <Pagination.Last 
+                      onClick={() => cambiarPagina(totalPaginas)} 
+                      disabled={paginaActual === totalPaginas}
+                    />
+                  </Pagination>
+                )}
+              </div>
+            </Col>
+          </Row>
+        )}
+
+        <ModalDetallesCompra
+          mostrarModal={mostrarModal}
+          setMostrarModal={setMostrarModal}
+          detalles={detallesCompra}
+          cargandoDetalles={cargandoDetalles}
+          errorDetalles={errorDetalles}
+        />
+
+        <ModalEliminacionCompra
+          mostrarModalEliminacion={mostrarModalEliminacion}
+          setMostrarModalEliminacion={setMostrarModalEliminacion}
+          eliminarCompra={eliminarCompra}
+        />
+
+        <ModalRegistroCompra
+          mostrarModal={mostrarModalRegistro}
+          setMostrarModal={setMostrarModalRegistro}
+          nuevaCompra={nuevaCompra}
+          setNuevaCompra={setNuevaCompra}
+          detallesCompra={detallesNuevos}
+          setDetallesCompra={setDetallesNuevos}
+          agregarCompra={agregarCompra}
+          errorCarga={errorCarga}
+          empleados={empleados}
+          productos={productos}
+        />
+
+        <ModalActualizacionCompra
+          mostrarModal={mostrarModalActualizacion}
+          setMostrarModal={setMostrarModalActualizacion}
+          compra={compraAEditar}
+          detallesCompra={detallesEditados}
+          setDetallesCompra={setDetallesEditados}
+          actualizarCompra={actualizarCompra}
+          errorCarga={errorCarga}
+          empleados={empleados}
+          productos={productos}
+        />
+      </Container>
+    </>
   );
 };
 

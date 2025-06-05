@@ -1,55 +1,60 @@
-import { Card } from "react-bootstrap";
-import { Bar, Line } from 'react-chartjs-2';
+import React from 'react';
+import { Card } from 'react-bootstrap';
+import { Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
-const VentasPorEmpleado = ({ empleados, total_ventas }) => {
-const data = {
-  labels: empleados, // Nombres de los empleados
-  datasets: [
-    {
-      label: 'Ventas(C$)',
-      data: total_ventas, // Total de ventas por empleado
-      backgroundColor: 'rgba(190, 192, 75, 0.2)',
-      borderColor: 'rgb(192, 124, 75)',
-      borderWidth: 1,
-    },
-  ],
-};
+const VentasPorMes = ({ meses, totales_por_mes }) => {
+  // Define chart data
+  const data = {
+    labels: meses,
+    datasets: [
+      {
+        label: 'Ventas por Mes',
+        data: totales_por_mes,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgb(5, 43, 43)',
+        borderWidth: 1,
+      },
+    ],
+  };
 
+  // Define chart options
   const options = {
     responsive: true,
     plugins: {
       legend: {
         position: 'top',
-      }
+      },
+      title: {
+        display: true,
+        text: 'Ventas Mensuales',
+      },
     },
     scales: {
       y: {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Córdobas (C$)',
+          text: 'Total Ventas',
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Empleados',
+          text: 'Meses',
         },
       },
     },
   };
 
+  // Return the bar chart wrapped in a Card
   return (
     <Card>
       <Card.Body>
-        <Card.Title>Ventas por empleado</Card.Title>
-        <div style={{ height: "300px", justifyContent: "center", alignItems: "center", display: "flex" }}>
-          <Line data={data} options={options} />
-        </div>
+        <Bar data={data} options={options} />
       </Card.Body>
     </Card>
   );
 };
 
-export default VentasPorEmpleado;
+export default VentasPorMes;

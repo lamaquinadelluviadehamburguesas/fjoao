@@ -129,8 +129,20 @@ const Clientes = () => {
         method: 'DELETE',
       });
 
+      let data;
+      try {
+        data = await respuesta.json();
+      } catch (error) {
+        throw new Error('Error al procesar la respuesta del servidor');
+      }
+
       if (!respuesta.ok) {
-        throw new Error('Error al eliminar el cliente');
+        if (respuesta.status === 400 && data?.tieneVentas) {
+          setErrorCarga(data.mensaje);
+        } else {
+          setErrorCarga(data.mensaje || 'Error al eliminar el cliente');
+        }
+        return;
       }
 
       await obtenerClientes();
@@ -138,6 +150,10 @@ const Clientes = () => {
       establecerPaginaActual(1);
       setClienteAEliminar(null);
       setErrorCarga(null);
+      
+      if (data.success) {
+        alert(data.mensaje);
+      }
     } catch (error) {
       setErrorCarga(error.message);
     }
@@ -242,6 +258,8 @@ const Clientes = () => {
           mostrarModalEliminacion={mostrarModalEliminacion}
           setMostrarModalEliminacion={setMostrarModalEliminacion}
           eliminarCliente={eliminarCliente}
+          errorCarga={errorCarga}
+          setErrorCarga={setErrorCarga}
         />
 
         <ModalEdicionCliente

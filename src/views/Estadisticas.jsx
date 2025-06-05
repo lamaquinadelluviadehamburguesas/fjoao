@@ -602,9 +602,8 @@ const Estadisticas = () => {
 
   // Renderiza todos los componentes con los datos obtenidos
   return (
-    <Container fluid className="mt-4">
-      <h4>Estadísticas</h4>
-      
+    <Container fluid className="py-4">
+      <h2 className="mb-4">Estadísticas</h2>
       <Button 
         variant="primary" 
         className="mb-4"
@@ -613,10 +612,7 @@ const Estadisticas = () => {
         Consultar con IA
       </Button>
 
-      <ChatIA 
-        mostrarChatModal={mostrarChatModal} 
-        setMostrarChatModal={setMostrarChatModal} 
-      />
+      <ChatIA mostrarChatModal={mostrarChatModal} setMostrarChatModal={setMostrarChatModal} />
 
       <Row className="mt-4">
         <Col xs={12} sm={12} md={12} lg={6} className="mb-4">

@@ -14,6 +14,9 @@ const Ventas = () => {
   const [listaVentas, setListaVentas] = useState([]); // Almacena los datos de la API
   const [cargando, setCargando] = useState(true);     // Controla el estado de carga
   const [errorCarga, setErrorCarga] = useState(null); // Maneja errores de la petición
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [ventasPorPagina] = useState(10);
 
   const [mostrarModal, setMostrarModal] = useState(false); // Estado para el modal
   const [detallesVenta, setDetallesVenta] = useState([]); // Estado para los detalles
@@ -233,6 +236,7 @@ const actualizarVenta = async (ventaActualizada, detalles) => {
       }
       const datos = await respuesta.json();
       setListaVentas(datos);    // Actualiza el estado con los datos
+      setTotalPaginas(Math.ceil(datos.length / ventasPorPagina)); // Calcula el total de páginas
       setCargando(false);       // Indica que la carga terminó
     } catch (error) {
       setErrorCarga(error.message); // Guarda el mensaje de error
@@ -247,7 +251,15 @@ const actualizarVenta = async (ventaActualizada, detalles) => {
   obtenerProductos();
   }, []);                       // Array vacío para que solo se ejecute una vez
 
+  // Función para cambiar de página
+  const cambiarPagina = (numeroPagina) => {
+    setPaginaActual(numeroPagina);
+  };
 
+  // Calcular el índice inicial y final de los elementos a mostrar
+  const indexOfLastVenta = paginaActual * ventasPorPagina;
+  const indexOfFirstVenta = indexOfLastVenta - ventasPorPagina;
+  const ventasActuales = listaVentas.slice(indexOfFirstVenta, indexOfLastVenta);
 
   // Renderizado de la vista
   return (
@@ -267,12 +279,15 @@ const actualizarVenta = async (ventaActualizada, detalles) => {
 
         {/* Pasa los estados como props al componente TablaVentas */}
         <TablaVentas
-          ventas={listaVentas}
+          ventas={ventasActuales}
           cargando={cargando}
           error={errorCarga}
           obtenerDetalles={obtenerDetalles} // Pasar la función
           abrirModalEliminacion={abrirModalEliminacion}
           abrirModalActualizacion={abrirModalActualizacion}
+          paginaActual={paginaActual}
+          totalPaginas={totalPaginas}
+          onChangePagina={cambiarPagina}
         />
 
         <ModalDetallesVenta

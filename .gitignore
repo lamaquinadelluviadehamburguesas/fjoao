@@ -23,5 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
-VITE_API_KEY=AIzaSyC0-UESnxRPnuRE_05AzBKsjSLt19eqZoo

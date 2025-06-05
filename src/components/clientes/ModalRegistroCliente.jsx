@@ -1,5 +1,5 @@
 // ModalRegistroCliente.jsx
-import React from "react";
+import React, { useRef } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 
 const ModalRegistroCliente = ({
@@ -10,6 +10,102 @@ const ModalRegistroCliente = ({
   agregarCliente,
   errorCarga,
 }) => {
+  // Referencias para los campos del formulario
+  const primerNombreRef = useRef(null);
+  const segundoNombreRef = useRef(null);
+  const primerApellidoRef = useRef(null);
+  const segundoApellidoRef = useRef(null);
+  const celularRef = useRef(null);
+  const direccionRef = useRef(null);
+  const cedulaRef = useRef(null);
+
+  const manejarKeyDown = (e, siguienteCampo) => {
+    const charCode = e.which ? e.which : e.keyCode;
+    
+    // Si presiona Enter
+    if (charCode === 13) {
+      e.preventDefault();
+      
+      // Si hay un siguiente campo, mover el foco a él
+      if (siguienteCampo) {
+        siguienteCampo.current.focus();
+      } else {
+        // Si es el último campo y el formulario es válido, guardar
+        if (validacionFormulario()) {
+          agregarCliente();
+        }
+      }
+    }
+  };
+
+  const validarLetras = (e) => {
+    const charCode = e.which ? e.which : e.keyCode;
+    if (
+      (charCode < 65 || charCode > 90) && // Letras mayúsculas
+      (charCode < 97 || charCode > 122) && // Letras minúsculas
+      charCode !== 8 && // Retroceso
+      charCode !== 46 && // Borrar
+      charCode !== 9 && // Tab
+      charCode !== 13 // Enter
+    ) {
+      e.preventDefault(); // Evita que se escriba el carácter
+    }
+  };
+
+  const validarCedula = (e) => {
+    const charCode = e.which ? e.which : e.keyCode;
+    if (charCode === 13) return; // Permitir Enter
+
+    const input = e.target;
+    const value = input.value;
+    
+    // Si no es el último carácter, solo permite números
+    if (value.length < input.maxLength - 1) {
+      if (
+        (charCode < 48 || charCode > 57) && // Números (0-9)
+        charCode !== 8 && // Retroceso
+        charCode !== 46 && // Borrar
+        charCode !== 9 // Tab
+      ) {
+        e.preventDefault();
+      }
+    } else {
+      // En el último carácter, solo permite letras
+      if (
+        (charCode < 65 || charCode > 90) && // Letras mayúsculas
+        (charCode < 97 || charCode > 122) && // Letras minúsculas
+        charCode !== 8 && // Retroceso
+        charCode !== 46 && // Borrar
+        charCode !== 9 // Tab
+      ) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const validarNumeros = (e) => {
+    const charCode = e.which ? e.which : e.keyCode;
+    if (charCode === 13) return; // Permitir Enter
+
+    if (
+      (charCode < 48 || charCode > 57) && // Números (0-9)
+      charCode !== 8 && // Retroceso
+      charCode !== 46 && // Borrar
+      charCode !== 9 // Tab
+    ) {
+      e.preventDefault(); // Evita que se escriba el carácter
+    }
+  };
+
+  const validacionFormulario = () => {
+    return (
+      nuevoCliente.primer_nombre.trim() !== "" &&
+      nuevoCliente.primer_apellido.trim() !== "" &&
+      nuevoCliente.celular.trim() !== "" &&
+      nuevoCliente.cedula.trim() !== ""
+    );
+  };
+
   return (
     <Modal show={mostrarModal} onHide={() => setMostrarModal(false)}>
       <Modal.Header closeButton>
@@ -20,10 +116,15 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formPrimerNombre">
             <Form.Label>Primer Nombre</Form.Label>
             <Form.Control
+              ref={primerNombreRef}
               type="text"
               name="primer_nombre"
               value={nuevoCliente.primer_nombre}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => {
+                validarLetras(e);
+                manejarKeyDown(e, segundoNombreRef);
+              }}
               placeholder="Ingresa el primer nombre (máx. 20 caracteres)"
               maxLength={20}
               required
@@ -33,10 +134,15 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formSegundoNombre">
             <Form.Label>Segundo Nombre</Form.Label>
             <Form.Control
+              ref={segundoNombreRef}
               type="text"
               name="segundo_nombre"
               value={nuevoCliente.segundo_nombre}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => {
+                validarLetras(e);
+                manejarKeyDown(e, primerApellidoRef);
+              }}
               placeholder="Ingresa el segundo nombre (máx. 20 caracteres)"
               maxLength={20}
             />
@@ -45,10 +151,15 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formPrimerApellido">
             <Form.Label>Primer Apellido</Form.Label>
             <Form.Control
+              ref={primerApellidoRef}
               type="text"
               name="primer_apellido"
               value={nuevoCliente.primer_apellido}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => {
+                validarLetras(e);
+                manejarKeyDown(e, segundoApellidoRef);
+              }}
               placeholder="Ingresa el primer apellido (máx. 20 caracteres)"
               maxLength={20}
               required
@@ -58,10 +169,15 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formSegundoApellido">
             <Form.Label>Segundo Apellido</Form.Label>
             <Form.Control
+              ref={segundoApellidoRef}
               type="text"
               name="segundo_apellido"
               value={nuevoCliente.segundo_apellido}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => {
+                validarLetras(e);
+                manejarKeyDown(e, celularRef);
+              }}
               placeholder="Ingresa el segundo apellido (máx. 20 caracteres)"
               maxLength={20}
             />
@@ -70,10 +186,15 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formCelular">
             <Form.Label>Celular</Form.Label>
             <Form.Control
+              ref={celularRef}
               type="text"
               name="celular"
               value={nuevoCliente.celular}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => {
+                validarNumeros(e);
+                manejarKeyDown(e, direccionRef);
+              }}
               placeholder="Ingresa el número celular (8 dígitos)"
               maxLength={8}
               required
@@ -83,11 +204,13 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formDireccion">
             <Form.Label>Dirección</Form.Label>
             <Form.Control
+              ref={direccionRef}
               as="textarea"
               rows={3}
               name="direccion"
               value={nuevoCliente.direccion}
               onChange={manejarCambioInput}
+              onKeyDown={(e) => manejarKeyDown(e, cedulaRef)}
               placeholder="Ingresa la dirección (máx. 150 caracteres)"
               maxLength={150}
             />
@@ -96,11 +219,16 @@ const ModalRegistroCliente = ({
           <Form.Group className="mb-3" controlId="formCedula">
             <Form.Label>Cédula</Form.Label>
             <Form.Control
+              ref={cedulaRef}
               type="text"
               name="cedula"
               value={nuevoCliente.cedula}
               onChange={manejarCambioInput}
-              placeholder="Ingresa la cédula (máx. 14 caracteres)"
+              onKeyDown={(e) => {
+                validarCedula(e);
+                manejarKeyDown(e, null); // null porque es el último campo
+              }}
+              placeholder="Ingresa la cédula (números y una letra al final)"
               maxLength={14}
               required
             />
@@ -117,7 +245,11 @@ const ModalRegistroCliente = ({
         }}>
           Cancelar
         </Button>
-        <Button variant="primary" onClick={agregarCliente}>
+        <Button 
+          variant="primary" 
+          onClick={agregarCliente}
+          disabled={!validacionFormulario()}
+        >
           Guardar Cliente
         </Button>
       </Modal.Footer>

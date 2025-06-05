@@ -119,17 +119,28 @@ const eliminarCategoria = async () => {
       method: 'DELETE',
     });
 
-    if (!respuesta.ok) {
-      throw new Error('Error al eliminar la categoría');
+    // Intentar obtener el cuerpo de la respuesta como JSON
+    let datos;
+    try {
+      datos = await respuesta.json();
+    } catch (e) {
+      datos = {};
     }
 
-    await obtenerCategorias(); // Refresca la lista
+    if (!respuesta.ok) {
+      throw new Error(datos.mensaje || 'Error al eliminar la categoría');
+    }
+
+    // Si la eliminación fue exitosa
+    await obtenerCategorias();
     setMostrarModalEliminacion(false);
-    establecerPaginaActual(1); // Regresa a la primera página
+    establecerPaginaActual(1);
     setCategoriaAEliminar(null);
     setErrorCarga(null);
   } catch (error) {
+    console.error('Error:', error);
     setErrorCarga(error.message);
+    setMostrarModalEliminacion(false);
   }
 };
 

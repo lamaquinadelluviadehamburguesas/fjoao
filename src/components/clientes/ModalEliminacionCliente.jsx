@@ -1,26 +1,45 @@
 import React from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Alert } from "react-bootstrap";
 
 const ModalEliminacionCliente = ({
   mostrarModalEliminacion,
   setMostrarModalEliminacion,
   eliminarCliente,
+  errorCarga,
+  setErrorCarga
 }) => {
+  const handleClose = () => {
+    setMostrarModalEliminacion(false);
+    if (errorCarga) {
+      setErrorCarga(null);
+    }
+  };
+
   return (
-    <Modal show={mostrarModalEliminacion} onHide={() => setMostrarModalEliminacion(false)}>
+    <Modal show={mostrarModalEliminacion} onHide={handleClose}>
       <Modal.Header closeButton>
-        <Modal.Title>Confirmar Eliminación</Modal.Title>
+        <Modal.Title>
+          {errorCarga ? 'No se puede eliminar' : 'Confirmar Eliminación'}
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        ¿Estás seguro de que deseas eliminar este cliente?
+        {errorCarga ? (
+          <Alert variant="danger">
+            <p>{errorCarga}</p>
+          </Alert>
+        ) : (
+          <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+        )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => setMostrarModalEliminacion(false)}>
-          Cancelar
+        <Button variant="secondary" onClick={handleClose}>
+          {errorCarga ? 'Entendido' : 'Cancelar'}
         </Button>
+        {!errorCarga && (
         <Button variant="danger" onClick={eliminarCliente}>
           Eliminar
         </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );

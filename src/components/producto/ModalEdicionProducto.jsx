@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, Form, Button } from "react-bootstrap";
+import { resizeImage } from '../../utils/imageUtils';
 
 const ModalEdicionProducto = ({
   mostrarModalEdicion,
@@ -8,7 +9,23 @@ const ModalEdicionProducto = ({
   manejarCambioInputEdicion,
   actualizarProducto,
   errorCarga,
+  categorias
 }) => {
+  const manejarCambioImagen = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        // Redimensionar la imagen a un máximo de 800x800 píxeles
+        const base64Image = await resizeImage(file, 800, 800);
+        manejarCambioInputEdicion({
+          target: { name: 'imagen', value: base64Image }
+        });
+      } catch (error) {
+        console.error('Error al procesar la imagen:', error);
+      }
+    }
+  };
+
   return (
     <Modal show={mostrarModalEdicion} onHide={() => setMostrarModalEdicion(false)}>
       <Modal.Header closeButton>
@@ -41,15 +58,20 @@ const ModalEdicionProducto = ({
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formCategoriaProducto">
-            <Form.Label>ID de Categoría</Form.Label>
-            <Form.Control
-              type="number"
+            <Form.Label>Categoría</Form.Label>
+            <Form.Select
               name="id_categoria"
               value={productoEditado?.id_categoria || ""}
               onChange={manejarCambioInputEdicion}
-              placeholder="ID de la categoría"
               required
-            />
+            >
+              <option value="">Selecciona una categoría</option>
+              {categorias.map((categoria) => (
+                <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                  {categoria.nombre_categoria}
+                </option>
+              ))}
+            </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formPrecioUnitario">
             <Form.Label>Precio Unitario</Form.Label>
@@ -75,34 +97,27 @@ const ModalEdicionProducto = ({
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formImagenProducto">
-  <Form.Label>Imagen</Form.Label>
-  {productoEditado?.imagen && (
-    <div>
-      <img
-        src={`data:image/png;base64,${productoEditado.imagen}`}
-        alt="Imagen actual"
-        style={{ maxWidth: '100px', marginBottom: '10px' }}
-      />
-    </div>
-  )}
-  <Form.Control
-    type="file"
-    name="imagen"
-    accept="image/*"
-    onChange={(e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          manejarCambioInputEdicion({
-            target: { name: 'imagen', value: reader.result.split(',')[1] }
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-    }}
-  />
-</Form.Group>
+            <Form.Label>Imagen del Producto</Form.Label>
+            {productoEditado?.imagen && (
+              <div className="mb-2">
+                <img
+                  src={`data:image/jpeg;base64,${productoEditado.imagen}`}
+                  alt="Imagen actual"
+                  style={{ maxWidth: '200px', maxHeight: '200px' }}
+                />
+              </div>
+            )}
+            <Form.Control
+              type="file"
+              name="imagen"
+              accept="image/*"
+              onChange={manejarCambioImagen}
+            />
+            <Form.Text className="text-muted">
+              La imagen será redimensionada automáticamente a un tamaño óptimo.
+              {productoEditado?.imagen && " Si no seleccionas una nueva imagen, se mantendrá la imagen actual."}
+            </Form.Text>
+          </Form.Group>
           {errorCarga && (
             <div className="text-danger mt-2">{errorCarga}</div>
           )}

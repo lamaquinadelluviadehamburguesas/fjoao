@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal, Form, Button, Table, Row, Col, FormControl } from "react-bootstrap";
 import AsyncSelect from 'react-select/async';
 import DatePicker from 'react-datepicker';
@@ -23,8 +23,44 @@ const ModalRegistroVenta = ({
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [nuevoDetalle, setNuevoDetalle] = useState({ id_producto: '', cantidad: '', precio_unitario: '' });
 
+  // Referencias para navegación
+  const clienteRef = useRef(null);
+  const empleadoRef = useRef(null);
+  const fechaRef = useRef(null);
+  const productoRef = useRef(null);
+  const cantidadRef = useRef(null);
+  const agregarProductoRef = useRef(null);
+  const guardarVentaRef = useRef(null);
+
   // Calcular total de la venta
   const totalVenta = detallesVenta.reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
+
+  const validacionFormulario = () => {
+    return (
+      nuevaVenta.id_cliente && // Cliente seleccionado
+      nuevaVenta.id_empleado && // Empleado seleccionado
+      nuevaVenta.fecha_venta && // Fecha seleccionada
+      detallesVenta.length > 0 // Al menos un detalle agregado
+    );
+  };
+
+  const validacionDetalle = () => {
+    return (
+      nuevoDetalle.id_producto && // Producto seleccionado
+      nuevoDetalle.cantidad && // Cantidad ingresada
+      nuevoDetalle.cantidad > 0 && // Cantidad positiva
+      nuevoDetalle.precio_unitario // Precio válido
+    );
+  };
+
+  const manejarKeyDown = (e, siguienteCampo) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (siguienteCampo) {
+        siguienteCampo.current?.focus();
+      }
+    }
+  };
 
   // Cargar opciones para AsyncSelect
   const cargarClientes = (inputValue, callback) => {
@@ -62,11 +98,13 @@ const ModalRegistroVenta = ({
   const manejarCambioCliente = (seleccionado) => {
     setClienteSeleccionado(seleccionado);
     setNuevaVenta(prev => ({ ...prev, id_cliente: seleccionado ? seleccionado.value : '' }));
+    if (seleccionado) empleadoRef.current?.focus();
   };
 
   const manejarCambioEmpleado = (seleccionado) => {
     setEmpleadoSeleccionado(seleccionado);
     setNuevaVenta(prev => ({ ...prev, id_empleado: seleccionado ? seleccionado.value : '' }));
+    if (seleccionado) fechaRef.current?.focus();
   };
 
   const manejarCambioProducto = (seleccionado) => {
@@ -76,6 +114,7 @@ const ModalRegistroVenta = ({
       id_producto: seleccionado ? seleccionado.value : '',
       precio_unitario: seleccionado ? seleccionado.precio : ''
     }));
+    if (seleccionado) cantidadRef.current?.focus();
   };
 
   // Manejar cambios en el detalle
@@ -86,8 +125,8 @@ const ModalRegistroVenta = ({
 
   // Agregar detalle a la lista
   const manejarAgregarDetalle = () => {
-    if (!nuevoDetalle.id_producto || !nuevoDetalle.cantidad || nuevoDetalle.cantidad <= 0) {
-      alert("Por favor, selecciona un producto y una cantidad válida.");
+    if (!validacionDetalle()) {
+      alert("Por favor, completa todos los campos del detalle correctamente.");
       return;
     }
 
@@ -106,6 +145,7 @@ const ModalRegistroVenta = ({
     });
     setNuevoDetalle({ id_producto: '', cantidad: '', precio_unitario: '' });
     setProductoSeleccionado(null);
+    productoRef.current?.focus();
   };
 
   return (
@@ -123,8 +163,9 @@ const ModalRegistroVenta = ({
           <Row>
             <Col xs={12} sm={12} md={4} lg={4}>
               <Form.Group className="mb-3" controlId="formCliente">
-                <Form.Label>Cliente</Form.Label>
+                <Form.Label>Cliente <span className="text-danger">*</span></Form.Label>
                 <AsyncSelect
+                  ref={clienteRef}
                   cacheOptions
                   defaultOptions
                   loadOptions={cargarClientes}
@@ -132,13 +173,16 @@ const ModalRegistroVenta = ({
                   value={clienteSeleccionado}
                   placeholder="Buscar cliente..."
                   isClearable
+                  onKeyDown={(e) => manejarKeyDown(e, empleadoRef)}
+                  required
                 />
               </Form.Group>
             </Col>
             <Col xs={12} sm={12} md={4} lg={4}>
               <Form.Group className="mb-3" controlId="formEmpleado">
-                <Form.Label>Empleado</Form.Label>
+                <Form.Label>Empleado <span className="text-danger">*</span></Form.Label>
                 <AsyncSelect
+                  ref={empleadoRef}
                   cacheOptions
                   defaultOptions
                   loadOptions={cargarEmpleados}
@@ -146,21 +190,28 @@ const ModalRegistroVenta = ({
                   value={empleadoSeleccionado}
                   placeholder="Buscar empleado..."
                   isClearable
+                  onKeyDown={(e) => manejarKeyDown(e, fechaRef)}
+                  required
                 />
               </Form.Group>
             </Col>
             <Col xs={12} sm={12} md={4} lg={4}>
               <Form.Group className="mb-3" controlId="formFechaVenta">
-                <Form.Label>Fecha de Venta</Form.Label>
+                <Form.Label>Fecha de Venta <span className="text-danger">*</span></Form.Label>
                 <br></br>
                 <DatePicker
+                  ref={fechaRef}
                   selected={nuevaVenta.fecha_venta}
-                  onChange={(date) => setNuevaVenta(prev => ({ ...prev, fecha_venta: date }))}
+                  onChange={(date) => {
+                    setNuevaVenta(prev => ({ ...prev, fecha_venta: date }));
+                    productoRef.current?.focus();
+                  }}
                   className="form-control"
                   dateFormat="dd/MM/yyyy HH:mm"
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
+                  onKeyDown={(e) => manejarKeyDown(e, productoRef)}
                   required
                 />
               </Form.Group>
@@ -171,8 +222,9 @@ const ModalRegistroVenta = ({
           <Row>
             <Col xs={12} sm={12} md={4} lg={4}>
               <Form.Group className="mb-3" controlId="formProducto">
-                <Form.Label>Producto</Form.Label>
+                <Form.Label>Producto <span className="text-danger">*</span></Form.Label>
                 <AsyncSelect
+                  ref={productoRef}
                   cacheOptions
                   defaultOptions
                   loadOptions={cargarProductos}
@@ -180,17 +232,26 @@ const ModalRegistroVenta = ({
                   value={productoSeleccionado}
                   placeholder="Buscar producto..."
                   isClearable
+                  onKeyDown={(e) => manejarKeyDown(e, cantidadRef)}
+                  required
                 />
               </Form.Group>
             </Col>
             <Col xs={12} sm={12} md={3} lg={3}>
               <Form.Group className="mb-3" controlId="formCantidad">
-                <Form.Label>Cantidad</Form.Label>
+                <Form.Label>Cantidad <span className="text-danger">*</span></Form.Label>
                 <FormControl
+                  ref={cantidadRef}
                   type="number"
                   name="cantidad"
                   value={nuevoDetalle.cantidad}
                   onChange={manejarCambioDetalle}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      manejarAgregarDetalle();
+                    }
+                  }}
                   placeholder="Cantidad"
                   min="1"
                   required
@@ -210,7 +271,13 @@ const ModalRegistroVenta = ({
               </Form.Group>
             </Col>
             <Col xs={5} sm={4} md={2} lg={2} className="d-flex align-items-center mt-3">
-              <Button style={{ width: '100%'}} variant="success" onClick={manejarAgregarDetalle}>
+              <Button 
+                ref={agregarProductoRef}
+                style={{ width: '100%'}} 
+                variant="success" 
+                onClick={manejarAgregarDetalle}
+                disabled={!validacionDetalle()}
+              >
                 Agregar Producto
               </Button>
             </Col>
@@ -257,8 +324,13 @@ const ModalRegistroVenta = ({
         <Button variant="secondary" onClick={() => setMostrarModal(false)}>
           Cancelar
         </Button>
-        <Button variant="primary" onClick={agregarVenta}>
-          Crear Venta
+        <Button 
+          ref={guardarVentaRef}
+          variant="primary" 
+          onClick={agregarVenta}
+          disabled={!validacionFormulario()}
+        >
+          Guardar Venta
         </Button>
       </Modal.Footer>
     </Modal>

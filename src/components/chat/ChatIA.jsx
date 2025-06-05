@@ -3,19 +3,17 @@ import { Modal, Button, Form, ListGroup, Spinner, Table } from 'react-bootstrap'
 
 const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
   const [mensaje, setMensaje] = useState('');
-  const [historialChat, setHistorialChat] = useState([]);
-  const [cargando, setCargando] = useState(false);
   const [respuesta, setRespuesta] = useState(null);
+  const [cargando, setCargando] = useState(false);
 
-  const enviarMensaje = async (e) => {
-    if (e) e.preventDefault();
-    if (!mensaje.trim()) return; // Evita enviar mensajes vacíos
+  const enviarMensaje = async () => {
+    if (!mensaje.trim()) return;
 
-    setCargando(true); // Activa el estado de carga
-    setRespuesta(null); // Limpia la respuesta anterior
+    setCargando(true);
+    setRespuesta(null);
+    setMensaje('');
 
     try {
-      // Prompt para enviar a Gemini
       const prompt = `
         Genera una consulta SQL válida para un Data Mart con las siguientes tablas y relaciones:
         - Dim_Tiempo (fecha, año, mes, dia, trimestre, nombre_mes, dia_semana)
@@ -38,10 +36,9 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
         Pregunta del usuario: "${mensaje}"
       `;
 
-      // Obtener la clave de la API desde las variables de entorno
       const apiKey = import.meta.env.VITE_API_KEY;
+      console.log('API Key:', apiKey);
 
-      // Llamada a la API de Gemini
       const respuestaGemini = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
@@ -63,12 +60,10 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
       const datosGemini = await respuestaGemini.json();
       const consultaSQL = datosGemini.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-      // Validar la consulta SQL generada
       if (!consultaSQL.trim().startsWith('SELECT') || consultaSQL.includes('DROP') || consultaSQL.includes('DELETE') || consultaSQL.includes('UPDATE')) {
         throw new Error('Consulta SQL generada inválida o insegura. SOLO SE PUEDEN REALIZAR CONSULTAS SELECT.');
       }
 
-      // Enviar la consulta al backend
       const response = await fetch('http://localhost:3000/ia/consultarconia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,11 +76,11 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
       }
 
       const resultadoConsulta = await response.json();
+
       setRespuesta({
         usuario: mensaje,
         ia: resultadoConsulta.resultados || 'No se encontraron resultados.',
       });
-
     } catch (error) {
       console.error('Error:', error);
       setRespuesta({
@@ -94,20 +89,16 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
       });
     } finally {
       setCargando(false);
-      setMensaje('');
     }
   };
 
   return (
     <Modal show={mostrarChatModal} onHide={() => setMostrarChatModal(false)} size="lg">
-      {/* Encabezado del modal */}
       <Modal.Header closeButton>
         <Modal.Title>Consulta al Data Mart con IA</Modal.Title>
       </Modal.Header>
 
-      {/* Cuerpo del modal */}
       <Modal.Body>
-        {/* Mostrar mensaje del usuario y respuesta de la IA */}
         {respuesta && (
           <ListGroup style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <ListGroup.Item variant="primary">
@@ -142,7 +133,6 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
           </ListGroup>
         )}
 
-        {/* Campo de entrada para el mensaje del usuario */}
         <Form.Control
           className="mt-3"
           type="text"
@@ -154,7 +144,6 @@ const ChatIA = ({ mostrarChatModal, setMostrarChatModal }) => {
         />
       </Modal.Body>
 
-      {/* Pie del modal con botones */}
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setMostrarChatModal(false)}>
           Cerrar
