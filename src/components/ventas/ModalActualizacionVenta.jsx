@@ -6,16 +6,15 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
 const ModalActualizacionVenta = ({
-  mostrarModal,
-  setMostrarModal,
+  mostrar,
+  handleClose,
   venta,
-  detallesVenta,
-  setDetallesVenta,
-  actualizarVenta,
-  errorCarga,
+  detalles,
   clientes,
   empleados,
-  productos
+  productos,
+  actualizarVenta,
+  errorCarga
 }) => {
   const [ventaActualizada, setVentaActualizada] = useState({
     id_venta: venta?.id_venta || '',
@@ -24,14 +23,22 @@ const ModalActualizacionVenta = ({
     fecha_venta: venta?.fecha_venta ? new Date(venta.fecha_venta) : new Date(),
     total_venta: venta?.total_venta || 0
   });
+  const [detallesEditados, setDetallesEditados] = useState([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [nuevoDetalle, setNuevoDetalle] = useState({ id_producto: '', cantidad: '', precio_unitario: '' });
   const [editandoDetalle, setEditandoDetalle] = useState(null);
 
+  // Inicializar detalles cuando se reciben nuevos
+  useEffect(() => {
+    if (detalles) {
+      setDetallesEditados(detalles);
+    }
+  }, [detalles]);
+
   // Calcular total de la venta
-  const totalVenta = detallesVenta.reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
+  const totalVenta = detallesEditados.reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
 
   useEffect(() => {
     if (venta && clientes.length > 0 && empleados.length > 0) {
@@ -118,7 +125,7 @@ const ModalActualizacionVenta = ({
       alert(`Stock insuficiente de ${producto.nombre_producto}. Unidades disponibles: ${producto.stock}`);
       return;
     }
-    setDetallesVenta(prev => [...prev, {
+    setDetallesEditados(prev => [...prev, {
       id_producto: nuevoDetalle.id_producto,
       nombre_producto: productoSeleccionado.label,
       cantidad: parseInt(nuevoDetalle.cantidad),
@@ -130,7 +137,7 @@ const ModalActualizacionVenta = ({
 
   // Eliminar detalle
   const eliminarDetalle = (index) => {
-    setDetallesVenta(prev => prev.filter((_, i) => i !== index));
+    setDetallesEditados(prev => prev.filter((_, i) => i !== index));
   };
 
   // Iniciar edición de detalle
@@ -160,24 +167,29 @@ const ModalActualizacionVenta = ({
       alert(`Stock insuficiente de ${producto.nombre_producto}. Unidades disponibles: ${producto.stock}`);
       return;
     }
-    const nuevosDetalles = [...detallesVenta];
+    const nuevosDetalles = [...detallesEditados];
     nuevosDetalles[editandoDetalle.index] = {
       id_producto: nuevoDetalle.id_producto,
       nombre_producto: productoSeleccionado.label,
       cantidad: parseInt(nuevoDetalle.cantidad),
       precio_unitario: parseFloat(nuevoDetalle.precio_unitario)
     };
-    setDetallesVenta(nuevosDetalles);
+    setDetallesEditados(nuevosDetalles);
     setEditandoDetalle(null);
     setNuevoDetalle({ id_producto: '', cantidad: '', precio_unitario: '' });
     setProductoSeleccionado(null);
   };
 
+  // Manejar el guardado de la venta actualizada
+  const handleGuardar = () => {
+    actualizarVenta(ventaActualizada, detallesEditados);
+  };
+
   return (
     <Modal
-      show={mostrarModal}
+      show={mostrar}
       onHide={() => {
-        setMostrarModal(false);
+        handleClose();
         setNuevoDetalle({ id_producto: '', cantidad: '', precio_unitario: '' });
         setProductoSeleccionado(null);
         setEditandoDetalle(null);
@@ -293,7 +305,7 @@ const ModalActualizacionVenta = ({
             </Col>
           </Row>
 
-          {detallesVenta.length > 0 && (
+          {detallesEditados.length > 0 && (
             <>
               <h5 className="mt-4">Detalles Agregados</h5>
               <Table striped bordered hover>
@@ -307,7 +319,7 @@ const ModalActualizacionVenta = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {detallesVenta.map((detalle, index) => (
+                  {detallesEditados.map((detalle, index) => (
                     <tr key={index}>
                       <td>{detalle.nombre_producto}</td>
                       <td>{detalle.cantidad}</td>
@@ -340,16 +352,15 @@ const ModalActualizacionVenta = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {
-          setMostrarModal(false);
-          setNuevoDetalle({ id_producto: '', cantidad: '', precio_unitario: '' });
-          setProductoSeleccionado(null);
-          setEditandoDetalle(null);
-        }}>
+        <Button variant="secondary" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button variant="primary" onClick={() => actualizarVenta(ventaActualizada, detallesVenta)}>
-          Actualizar Venta
+        <Button 
+          variant="primary" 
+          onClick={handleGuardar}
+          disabled={!ventaActualizada.id_cliente || !ventaActualizada.id_empleado || detallesEditados.length === 0}
+        >
+          Guardar Cambios
         </Button>
       </Modal.Footer>
     </Modal>

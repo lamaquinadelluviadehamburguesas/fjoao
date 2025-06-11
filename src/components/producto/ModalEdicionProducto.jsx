@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import { resizeImage } from '../../utils/imageUtils';
 
@@ -6,23 +6,61 @@ const ModalEdicionProducto = ({
   mostrarModalEdicion,
   setMostrarModalEdicion,
   productoEditado,
-  manejarCambioInputEdicion,
-  actualizarProducto,
-  errorCarga,
+  actualizarListaProductos,
   categorias
 }) => {
+  const [producto, setProducto] = useState({});
+  const [errorCarga, setErrorCarga] = useState(null);
+
+  useEffect(() => {
+    if (productoEditado) {
+      setProducto(productoEditado);
+    }
+  }, [productoEditado]);
+
+  const manejarCambioInput = (e) => {
+    const { name, value } = e.target;
+    setProducto(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const manejarCambioImagen = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        // Redimensionar la imagen a un máximo de 800x800 píxeles
         const base64Image = await resizeImage(file, 800, 800);
-        manejarCambioInputEdicion({
-          target: { name: 'imagen', value: base64Image }
-        });
+        setProducto(prev => ({
+          ...prev,
+          imagen: base64Image
+        }));
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
+        setErrorCarga('Error al procesar la imagen');
       }
+    }
+  };
+
+  const actualizarProducto = async () => {
+    try {
+      const respuesta = await fetch(`http://localhost:3000/api/productos/${producto.id_producto}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(producto)
+      });
+
+      if (!respuesta.ok) {
+        throw new Error('Error al actualizar el producto');
+      }
+
+      await actualizarListaProductos();
+      setMostrarModalEdicion(false);
+      setErrorCarga(null);
+    } catch (error) {
+      setErrorCarga(error.message);
     }
   };
 
@@ -38,8 +76,8 @@ const ModalEdicionProducto = ({
             <Form.Control
               type="text"
               name="nombre_producto"
-              value={productoEditado?.nombre_producto || ""}
-              onChange={manejarCambioInputEdicion}
+              value={producto?.nombre_producto || ""}
+              onChange={manejarCambioInput}
               placeholder="Nombre del producto (máx. 20 caracteres)"
               maxLength={20}
               required
@@ -51,8 +89,8 @@ const ModalEdicionProducto = ({
               as="textarea"
               rows={3}
               name="descripcion_producto"
-              value={productoEditado?.descripcion_producto || ""}
-              onChange={manejarCambioInputEdicion}
+              value={producto?.descripcion_producto || ""}
+              onChange={manejarCambioInput}
               placeholder="Descripción del producto (máx. 100 caracteres)"
               maxLength={100}
             />
@@ -61,12 +99,12 @@ const ModalEdicionProducto = ({
             <Form.Label>Categoría</Form.Label>
             <Form.Select
               name="id_categoria"
-              value={productoEditado?.id_categoria || ""}
-              onChange={manejarCambioInputEdicion}
+              value={producto?.id_categoria || ""}
+              onChange={manejarCambioInput}
               required
             >
               <option value="">Selecciona una categoría</option>
-              {categorias.map((categoria) => (
+              {(categorias || []).map((categoria) => (
                 <option key={categoria.id_categoria} value={categoria.id_categoria}>
                   {categoria.nombre_categoria}
                 </option>
@@ -78,8 +116,8 @@ const ModalEdicionProducto = ({
             <Form.Control
               type="number"
               name="precio_unitario"
-              value={productoEditado?.precio_unitario || ""}
-              onChange={manejarCambioInputEdicion}
+              value={producto?.precio_unitario || ""}
+              onChange={manejarCambioInput}
               placeholder="Precio unitario"
               step="0.01"
               required
@@ -90,18 +128,18 @@ const ModalEdicionProducto = ({
             <Form.Control
               type="number"
               name="stock"
-              value={productoEditado?.stock || ""}
-              onChange={manejarCambioInputEdicion}
+              value={producto?.stock || ""}
+              onChange={manejarCambioInput}
               placeholder="Cantidad en stock"
               required
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="formImagenProducto">
             <Form.Label>Imagen del Producto</Form.Label>
-            {productoEditado?.imagen && (
+            {producto?.imagen && (
               <div className="mb-2">
                 <img
-                  src={`data:image/jpeg;base64,${productoEditado.imagen}`}
+                  src={`data:image/jpeg;base64,${producto.imagen}`}
                   alt="Imagen actual"
                   style={{ maxWidth: '200px', maxHeight: '200px' }}
                 />
@@ -115,7 +153,7 @@ const ModalEdicionProducto = ({
             />
             <Form.Text className="text-muted">
               La imagen será redimensionada automáticamente a un tamaño óptimo.
-              {productoEditado?.imagen && " Si no seleccionas una nueva imagen, se mantendrá la imagen actual."}
+              {producto?.imagen && " Si no seleccionas una nueva imagen, se mantendrá la imagen actual."}
             </Form.Text>
           </Form.Group>
           {errorCarga && (

@@ -43,6 +43,7 @@ const ModalRegistroCliente = ({
     if (
       (charCode < 65 || charCode > 90) && // Letras mayúsculas
       (charCode < 97 || charCode > 122) && // Letras minúsculas
+      charCode !== 32 && // Espacio
       charCode !== 8 && // Retroceso
       charCode !== 46 && // Borrar
       charCode !== 9 && // Tab
@@ -99,10 +100,10 @@ const ModalRegistroCliente = ({
 
   const validacionFormulario = () => {
     return (
-      nuevoCliente.primer_nombre.trim() !== "" &&
-      nuevoCliente.primer_apellido.trim() !== "" &&
-      nuevoCliente.celular.trim() !== "" &&
-      nuevoCliente.cedula.trim() !== ""
+      nuevoCliente?.primer_nombre?.trim() !== "" &&
+      nuevoCliente?.primer_apellido?.trim() !== "" &&
+      nuevoCliente?.celular?.trim() !== "" &&
+      nuevoCliente?.cedula?.trim() !== ""
     );
   };
 
@@ -119,7 +120,7 @@ const ModalRegistroCliente = ({
               ref={primerNombreRef}
               type="text"
               name="primer_nombre"
-              value={nuevoCliente.primer_nombre}
+              value={nuevoCliente?.primer_nombre || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarLetras(e);
@@ -137,7 +138,7 @@ const ModalRegistroCliente = ({
               ref={segundoNombreRef}
               type="text"
               name="segundo_nombre"
-              value={nuevoCliente.segundo_nombre}
+              value={nuevoCliente?.segundo_nombre || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarLetras(e);
@@ -154,7 +155,7 @@ const ModalRegistroCliente = ({
               ref={primerApellidoRef}
               type="text"
               name="primer_apellido"
-              value={nuevoCliente.primer_apellido}
+              value={nuevoCliente?.primer_apellido || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarLetras(e);
@@ -172,7 +173,7 @@ const ModalRegistroCliente = ({
               ref={segundoApellidoRef}
               type="text"
               name="segundo_apellido"
-              value={nuevoCliente.segundo_apellido}
+              value={nuevoCliente?.segundo_apellido || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarLetras(e);
@@ -189,7 +190,7 @@ const ModalRegistroCliente = ({
               ref={celularRef}
               type="text"
               name="celular"
-              value={nuevoCliente.celular}
+              value={nuevoCliente?.celular || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarNumeros(e);
@@ -205,14 +206,13 @@ const ModalRegistroCliente = ({
             <Form.Label>Dirección</Form.Label>
             <Form.Control
               ref={direccionRef}
-              as="textarea"
-              rows={3}
+              type="text"
               name="direccion"
-              value={nuevoCliente.direccion}
+              value={nuevoCliente?.direccion || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => manejarKeyDown(e, cedulaRef)}
-              placeholder="Ingresa la dirección (máx. 150 caracteres)"
-              maxLength={150}
+              placeholder="Ingresa la dirección (máx. 100 caracteres)"
+              maxLength={100}
             />
           </Form.Group>
 
@@ -222,14 +222,14 @@ const ModalRegistroCliente = ({
               ref={cedulaRef}
               type="text"
               name="cedula"
-              value={nuevoCliente.cedula}
+              value={nuevoCliente?.cedula || ""}
               onChange={manejarCambioInput}
               onKeyDown={(e) => {
                 validarCedula(e);
-                manejarKeyDown(e, null); // null porque es el último campo
+                manejarKeyDown(e, null);
               }}
-              placeholder="Ingresa la cédula (números y una letra al final)"
-              maxLength={14}
+              placeholder="Ingresa la cédula (10 caracteres)"
+              maxLength={10}
               required
             />
           </Form.Group>
@@ -240,9 +240,7 @@ const ModalRegistroCliente = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => {
-          setMostrarModal(false);
-        }}>
+        <Button variant="secondary" onClick={() => setMostrarModal(false)}>
           Cancelar
         </Button>
         <Button 
@@ -250,7 +248,7 @@ const ModalRegistroCliente = ({
           onClick={agregarCliente}
           disabled={!validacionFormulario()}
         >
-          Guardar Cliente
+          Guardar
         </Button>
       </Modal.Footer>
     </Modal>

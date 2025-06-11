@@ -1,10 +1,9 @@
-import React from 'react';
-import Paginacion from '../ordenamiento/Paginacion';
-import { Table, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import { Table, Button } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const TablaEmpleados = ({
-  empleados, 
+  empleados,
   cargando,
   error,
   totalElementos,
@@ -12,7 +11,7 @@ const TablaEmpleados = ({
   paginaActual,
   establecerPaginaActual,
   abrirModalEliminacion,
-  abrirModalEdicion
+  abrirModalEdicion,
 }) => {
   if (cargando) {
     return <div>Cargando empleados...</div>;
@@ -69,12 +68,6 @@ const TablaEmpleados = ({
           ))}
         </tbody>
       </Table>
-      <Paginacion
-        elementosPorPagina={elementosPorPagina}
-        totalElementos={totalElementos}
-        paginaActual={paginaActual}
-        establecerPaginaActual={establecerPaginaActual}
-      />
     </>
   );
 };

@@ -11,8 +11,8 @@ import Compras from "./views/Compras";
 import Usuarios from "./views/Usuarios";
 import Empleados from "./views/Empleados";
 import CatalogoProductos from "./views/CatalogoProductos";
-import Estadisticas from "./views/Estadisticas"; // Nuevo componente para estadísticas
-import Dashboard from "./views/Dashboard"; // Componente con el iframe de Power BI
+import Estadisticas from "./views/Estadisticas";
+import Dashboard from "./views/Dashboard";
 import "./App.css";
 
 const App = () => {
@@ -31,8 +31,8 @@ const App = () => {
           <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/empleados" element={<Empleados />} />
           <Route path="/catalogoProductos" element={<CatalogoProductos />} />
-          <Route path="/estadisticas" element={<Estadisticas />} /> {/* Usa Estadisticas aquí */}
-          <Route path="/Dashboard" element={<Dashboard />} /> {/* Usa Dashboard aquí */}
+          <Route path="/estadisticas" element={<Estadisticas />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
         </Routes>
       </main>
     </Router>

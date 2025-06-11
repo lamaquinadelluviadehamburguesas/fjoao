@@ -5,13 +5,12 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
 const ModalRegistroVenta = ({
-  mostrarModal,
-  setMostrarModal,
+  mostrar,
+  handleClose,
   nuevaVenta,
   setNuevaVenta,
-  detallesVenta,
-  setDetallesVenta,
-  agregarDetalle,
+  detallesNuevos,
+  setDetallesNuevos,
   agregarVenta,
   errorCarga,
   clientes,
@@ -33,14 +32,14 @@ const ModalRegistroVenta = ({
   const guardarVentaRef = useRef(null);
 
   // Calcular total de la venta
-  const totalVenta = detallesVenta.reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
+  const totalVenta = (detallesNuevos || []).reduce((sum, detalle) => sum + (detalle.cantidad * detalle.precio_unitario), 0);
 
   const validacionFormulario = () => {
     return (
       nuevaVenta.id_cliente && // Cliente seleccionado
       nuevaVenta.id_empleado && // Empleado seleccionado
       nuevaVenta.fecha_venta && // Fecha seleccionada
-      detallesVenta.length > 0 // Al menos un detalle agregado
+      detallesNuevos.length > 0 // Al menos un detalle agregado
     );
   };
 
@@ -137,12 +136,12 @@ const ModalRegistroVenta = ({
       return;
     }
 
-    agregarDetalle({
+    setDetallesNuevos(prev => [...prev, {
       id_producto: nuevoDetalle.id_producto,
       nombre_producto: productoSeleccionado.label,
       cantidad: parseInt(nuevoDetalle.cantidad),
       precio_unitario: parseFloat(nuevoDetalle.precio_unitario)
-    });
+    }]);
     setNuevoDetalle({ id_producto: '', cantidad: '', precio_unitario: '' });
     setProductoSeleccionado(null);
     productoRef.current?.focus();
@@ -150,8 +149,8 @@ const ModalRegistroVenta = ({
 
   return (
     <Modal
-      show={mostrarModal}
-      onHide={() => setMostrarModal(false)}
+      show={mostrar}
+      onHide={handleClose}
       fullscreen={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
@@ -283,7 +282,7 @@ const ModalRegistroVenta = ({
             </Col>
           </Row>
 
-          {detallesVenta.length > 0 && (
+          {detallesNuevos.length > 0 && (
             <>
               <h5 className="mt-4">Detalles Agregados</h5>
               <Table striped bordered hover>
@@ -296,7 +295,7 @@ const ModalRegistroVenta = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {detallesVenta.map((detalle, index) => (
+                  {detallesNuevos.map((detalle, index) => (
                     <tr key={index}>
                       <td>{detalle.nombre_producto}</td>
                       <td>{detalle.cantidad}</td>
@@ -321,7 +320,7 @@ const ModalRegistroVenta = ({
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => setMostrarModal(false)}>
+        <Button variant="secondary" onClick={handleClose}>
           Cancelar
         </Button>
         <Button 

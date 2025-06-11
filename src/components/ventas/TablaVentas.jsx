@@ -28,6 +28,21 @@ const TablaVentas = ({
     });
   };
 
+  // Función para formatear el total de venta con manejo de errores y depuración
+  const formatearTotal = (total) => {
+    console.log('Processing total:', total); // Log the value being processed
+    if (total == null || total === undefined || isNaN(Number(total))) {
+      console.log('Invalid or missing total:', total);
+      return 'C$ 0.00';
+    }
+    return `C$ ${Number(total).toFixed(2)}`;
+  };
+
+  // Log the incoming ventas data for debugging
+  React.useEffect(() => {
+    console.log('Ventas data received:', ventas);
+  }, [ventas]);
+
   if (cargando) {
     return <div>Cargando ventas...</div>; // Muestra mensaje mientras carga
   }
@@ -58,9 +73,9 @@ const TablaVentas = ({
             <tr key={venta.id_venta}>
               <td>{venta.id_venta}</td>
               <td>{formatearFecha(venta.fecha_venta)}</td>
-              <td>{venta.nombre_cliente}</td>
-              <td>{venta.nombre_empleado}</td>
-              <td>C$ {venta.total_venta.toFixed(2)}</td>
+              <td>{venta.nombre_cliente || 'N/A'}</td>
+              <td>{venta.nombre_empleado || 'N/A'}</td>
+              <td>{formatearTotal(venta.total_venta)}</td>
               <td className="text-center">
                 <Button
                   variant="outline-primary"

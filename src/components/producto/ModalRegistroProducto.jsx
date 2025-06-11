@@ -1,16 +1,23 @@
-import React, { useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Modal, Form, Button } from "react-bootstrap";
 import { resizeImage } from '../../utils/imageUtils';
 
 const ModalRegistroProducto = ({
-  mostrarModal,
-  setMostrarModal,
-  nuevoProducto,
-  manejarCambioInput,
-  agregarProducto,
-  errorCarga,
-  categorias // Lista de categorías obtenidas
+  mostrar,
+  handleClose,
+  actualizarListaProductos
 }) => {
+  const [nuevoProducto, setNuevoProducto] = useState({
+    nombre_producto: '',
+    descripcion_producto: '',
+    id_categoria: '',
+    precio_unitario: '',
+    stock: '',
+    imagen: ''
+  });
+  const [errorCarga, setErrorCarga] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+
   // Referencias para los campos
   const nombreRef = useRef(null);
   const descripcionRef = useRef(null);
@@ -18,6 +25,31 @@ const ModalRegistroProducto = ({
   const precioRef = useRef(null);
   const stockRef = useRef(null);
   const imagenRef = useRef(null);
+
+  React.useEffect(() => {
+    if (mostrar) {
+      obtenerCategorias();
+    }
+  }, [mostrar]);
+
+  const obtenerCategorias = async () => {
+    try {
+      const respuesta = await fetch('http://localhost:3000/api/categorias');
+      if (!respuesta.ok) throw new Error('Error al cargar las categorías');
+      const datos = await respuesta.json();
+      setCategorias(datos);
+    } catch (error) {
+      setErrorCarga(error.message);
+    }
+  };
+
+  const manejarCambioInput = (e) => {
+    const { name, value } = e.target;
+    setNuevoProducto(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const manejarKeyDown = (e, siguienteCampo) => {
     const charCode = e.which ? e.which : e.keyCode;
@@ -134,12 +166,52 @@ const ModalRegistroProducto = ({
     );
   };
 
+  const agregarProducto = async () => {
+    if (!validacionFormulario()) {
+      setErrorCarga("Por favor, completa todos los campos requeridos antes de guardar.");
+      return;
+    }
+
+    try {
+      const respuesta = await fetch('http://localhost:3000/api/registrarproductos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevoProducto),
+      });
+
+      if (!respuesta.ok) {
+        throw new Error('Error al agregar el producto');
+      }
+
+      await actualizarListaProductos();
+      setNuevoProducto({
+        nombre_producto: '',
+        descripcion_producto: '',
+        id_categoria: '',
+        precio_unitario: '',
+        stock: '',
+        imagen: ''
+      });
+      handleClose();
+      setErrorCarga(null);
+    } catch (error) {
+      setErrorCarga(error.message);
+    }
+  };
+
   return (
-    <Modal show={mostrarModal} onHide={() => setMostrarModal(false)}>
+    <Modal show={mostrar} onHide={handleClose}>
       <Modal.Header closeButton>
         <Modal.Title>Agregar Nuevo Producto</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {errorCarga && (
+          <div className="alert alert-danger" role="alert">
+            {errorCarga}
+          </div>
+        )}
         <Form>
           <Form.Group className="mb-3" controlId="formNombreProducto">
             <Form.Label>Nombre del Producto</Form.Label>
@@ -224,46 +296,28 @@ const ModalRegistroProducto = ({
                 manejarKeyDown(e, imagenRef);
               }}
               onBlur={validarValorPositivo}
-              placeholder="Ingresa la cantidad en stock"
+              placeholder="Ingresa el stock"
               required
             />
           </Form.Group>
 
           <Form.Group className="mb-3" controlId="formImagenProducto">
-            <Form.Label>Imagen del Producto</Form.Label>
+            <Form.Label>Imagen</Form.Label>
             <Form.Control
               ref={imagenRef}
               type="file"
-              name="imagen"
               accept="image/*"
               onChange={manejarCambioImagen}
-              onKeyDown={(e) => manejarKeyDown(e, null)}
             />
-            <Form.Text className="text-muted">
-              La imagen será redimensionada automáticamente a un tamaño óptimo.
-            </Form.Text>
-            {nuevoProducto.imagen && (
-              <div className="mt-2">
-                <img
-                  src={`data:image/jpeg;base64,${nuevoProducto.imagen}`}
-                  alt="Vista previa"
-                  style={{ maxWidth: '200px', maxHeight: '200px' }}
-                />
-              </div>
-            )}
           </Form.Group>
-
-          {errorCarga && (
-            <div className="text-danger mt-2">{errorCarga}</div>
-          )}
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={() => setMostrarModal(false)}>
+        <Button variant="secondary" onClick={handleClose}>
           Cancelar
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={agregarProducto}
           disabled={!validacionFormulario()}
         >

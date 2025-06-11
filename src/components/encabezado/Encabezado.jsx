@@ -8,7 +8,7 @@ import casaIcon from '../../assets/casa.png';
 import biIcon from '../../assets/bi.png';
 import diagramIcon from '../../assets/diagrama.png';
 import empleadosIcon from '../../assets/empleado.png';
-
+import MenuButton from './MenuButton';
 
 const Encabezado = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -19,14 +19,14 @@ const Encabezado = () => {
   // Verificar si el usuario está logueado y su rol
   useEffect(() => {
     const verificarUsuario = () => {
-    const usuario = localStorage.getItem('usuario');
-    const contraseña = localStorage.getItem('contraseña');
+      const usuario = localStorage.getItem('usuario');
+      const contraseña = localStorage.getItem('contraseña');
       const rol = localStorage.getItem('rol');
       
-    if (!usuario || !contraseña) {
-      if (location.pathname !== '/') {
-        navigate('/');
-      }
+      if (!usuario || !contraseña) {
+        if (location.pathname !== '/') {
+          navigate('/');
+        }
         return;
       }
 
@@ -66,9 +66,7 @@ const Encabezado = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             <Dropdown show={showDropdown} onToggle={() => setShowDropdown(!showDropdown)} disabled={!isLoggedIn()}>
-              <Dropdown.Toggle variant="primary" id="dropdown-menu" disabled={!isLoggedIn()}>
-                Menú
-              </Dropdown.Toggle>
+              <MenuButton onClick={() => setShowDropdown(!showDropdown)} disabled={!isLoggedIn()} />
               <Dropdown.Menu>
                 {/* Mostrar todas las opciones para usuarios no nuevos */}
                 {!esUsuarioNuevo && (

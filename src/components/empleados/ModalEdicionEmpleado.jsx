@@ -93,9 +93,7 @@ const ModalEdicionEmpleado = ({
               onChange={manejarCambioInputEdicion}
             />
           </Form.Group>
-          {errorCarga && (
-            <div className="text-danger mt-2">{errorCarga}</div>
-          )}
+          {errorCarga && <div className="text-danger mt-2">{errorCarga}</div>}
         </Form>
       </Modal.Body>
       <Modal.Footer>
